@@ -1,10 +1,12 @@
-import { expect, test } from 'bun:test';
+import { describe, expect, it } from 'bun:test';
 
-test('example test', () => {
-    expect(1 + 1).toBe(2);
-});
+describe('Example Tests', () => {
+    it('example test', () => {
+        expect(1 + 1).toBe(2);
+    });
 
-test('async test example', async () => {
-    const result = Promise.resolve('hello');
-    expect(result).resolves.toBe('hello');
+    it('async test example', async () => {
+        const result = Promise.resolve('hello');
+        expect(result).resolves.toBe('hello');
+    });
 });
