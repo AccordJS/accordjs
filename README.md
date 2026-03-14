@@ -166,7 +166,12 @@ Please read our [Contributing Guide](CONTRIBUTING.md) for details on:
 
 ## Security
 
-If you discover a security vulnerability, please email [angel@angelxmoreno.com](mailto:angel@angelxmoreno.com).
+We take security seriously. If you discover a security vulnerability:
+
+1. **Preferred**: Use GitHub's [private vulnerability reporting](https://github.com/AccordJS/accordjs/security) feature
+2. **Alternative**: Email [angel@angelxmoreno.com](mailto:angel@angelxmoreno.com)
+
+For more details, see our [Security Policy](SECURITY.md).
 
 ## License
 
