@@ -14,7 +14,7 @@
 - 🔌 **Plugin System**: Extensible plugin architecture for modular feature development
 - 📡 **Typed Event Bus**: Fully typed event distribution system with compile-time safety
 - ⚡ **Command Router**: Centralized command handling with permission checks and cooldowns
-- 🛡️ **Type Safety**: Zero `any` usage with strict TypeScript configuration
+- 🛡️ **Type Safety**: Zero `any` usage with strict TypeScript configuration and Zod runtime validation
 - 📊 **Analytics Ready**: Built-in support for event logging and analytics processing
 
 ### Development Experience
@@ -57,10 +57,11 @@
 | `bun run dev` | Start development server with hot reload |
 | `bun run build` | Build the project for production |
 | `bun test` | Run the test suite |
-| `bun run typecheck` | Run TypeScript type checking |
+| `bun run check-types` | Run TypeScript type checking |
 | `bun run lint` | Lint code with Biome |
 | `bun run lint:fix` | Fix linting issues automatically |
-| `bun run check` | Run type checking and linting |
+| `bun run check-dups` | Check for code duplication |
+| `bun run check` | Run all checks (types, lint, duplicates) |
 
 ## Architecture
 
@@ -70,7 +71,7 @@ AccordJS follows a clean, event-driven architecture with these core principles:
 The Discord client exists only in the gateway layer, preventing Discord-specific objects from leaking into application logic.
 
 ### 2. Event Normalization
-Discord events are transformed into internal event types for framework independence and simplified processing.
+Discord events are transformed into internal event types using Zod schemas for framework independence and runtime validation.
 
 ### 3. Typed Event Bus
 A fully typed event distribution system ensures compile-time safety and eliminates runtime errors.
@@ -88,7 +89,7 @@ src/
 │   └── intents.ts         # Discord intents configuration
 ├── bus/                   # Event distribution system
 │   └── eventBus.ts       # Typed event bus implementation
-├── events/                # Event normalization
+├── events/                # Event normalization logic
 │   ├── normalizeMessage.ts
 │   ├── normalizeMember.ts
 │   └── types.ts          # Event type definitions
@@ -96,11 +97,12 @@ src/
 │   ├── commands/         # Command handling plugin
 │   ├── logging/          # Logging plugin
 │   └── analytics/        # Analytics plugin
-├── services/             # External services
-│   ├── database.ts       # Database connection
-│   └── redis.ts          # Redis connection
-├── types/                # Core framework types
-│   └── events.ts         # Event type definitions
+├── types/                # Core framework types and schemas
+│   ├── index.ts          # Central type exports
+│   ├── events.ts         # Event schemas (Zod) and types
+│   └── plugin.ts         # Plugin interface definitions
+├── utils/                # Utility functions
+│   └── createLogger.ts   # Pino logger factory
 └── index.ts              # Main entry point
 ```
 
@@ -110,7 +112,7 @@ src/
 
 This project uses [Biome](https://biomejs.dev/) for both linting and formatting:
 
-- **Formatting**: 4 spaces, single quotes, semicolons
+- **Formatting**: 4 spaces, single quotes, semicolons, 120 character line width
 - **Linting**: Recommended rules with TypeScript support
 - **Import sorting**: Automatic import organization
 
@@ -119,18 +121,17 @@ This project uses [Biome](https://biomejs.dev/) for both linting and formatting:
 Pre-commit hooks automatically run:
 - TypeScript type checking
 - Code linting
+- Duplicate detection
 - Commit message validation
 
 ### Commit Messages
 
-We follow [Conventional Commits](https://www.conventionalcommits.org/):
+We follow [Conventional Commits](https://www.conventionalcommits.org/) in past tense:
 
 ```
-type(scope): description
-
-feat: add user authentication
-fix: resolve memory leak in data processing
-docs: update installation instructions
+feat: added user authentication
+fix: resolved memory leak in data processing
+docs: updated installation instructions
 ```
 
 ## Testing
@@ -153,7 +154,7 @@ bun test --watch
 bun run build
 
 # Type check only (no output)
-bun run typecheck
+bun run check-types
 ```
 
 ## Contributing
@@ -181,12 +182,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Event Flow
 ```
-Discord Gateway → Gateway Adapter → Event Normalization → Event Bus → Plugins
+Discord Gateway → Gateway Adapter → Event Normalization (Zod) → Event Bus → Plugins
 ```
 
 ### Type Safety
 AccordJS enforces strict type safety with:
 - Zero `any` usage throughout the codebase
+- Zod schemas for runtime validation and inferred types
 - Discriminated union event types
 - Typed plugin interfaces
 - Compile-time event handler validation
@@ -194,7 +196,7 @@ AccordJS enforces strict type safety with:
 ### Plugin Development
 Plugins subscribe to normalized events and operate independently:
 ```typescript
-eventBus.subscribe("MESSAGE_CREATE", async (event) => {
+eventBus.subscribe('MESSAGE_CREATE', async (event) => {
     // Handle normalized message event
     console.log(`Message from ${event.userId}: ${event.content}`);
 });
