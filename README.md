@@ -1,6 +1,6 @@
 # My Bun Project
 
-[![CI](https://github.com/angelxmoreno/my-bun-project/actions/workflows/ci.yml/badge.svg)](https://github.com/angelxmoreno/my-bun-project/actions/workflows/ci.yml)
+[![CI](https://github.com/AccordJS/accordjs/actions/workflows/ci.yml/badge.svg)](https://github.com/AccordJS/accordjs/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 [![Bun](https://img.shields.io/badge/Bun-1.0+-black.svg)](https://bun.sh/)
@@ -31,7 +31,7 @@
 
 1. **Click "Use this template"** on GitHub or clone the repository:
    ```bash
-   git clone https://github.com/angelxmoreno/my-bun-project.git
+   git clone https://github.com/AccordJS/accordjs.git
    cd my-bun-project
    ```
 

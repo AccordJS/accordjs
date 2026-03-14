@@ -1,13 +1,18 @@
 pre-commit:
   parallel: true
   commands:
+    check-dups:
+      run: bun run check-dups
+      skip:
+        - merge
+        - rebase
     lint:
       run: bun run lint
       skip:
         - merge
         - rebase
     types:
-      run: bun run typecheck
+      run: bun run check-types
       skip:
         - merge
         - rebase

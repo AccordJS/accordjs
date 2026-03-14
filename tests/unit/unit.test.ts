@@ -5,6 +5,6 @@ test('example test', () => {
 });
 
 test('async test example', async () => {
-    const result = await Promise.resolve('hello');
-    expect(result).toBe('hello');
+    const result = Promise.resolve('hello');
+    expect(result).resolves.toBe('hello');
 });

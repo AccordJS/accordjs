@@ -14,7 +14,7 @@ Thank you for your interest in contributing to this project! This guide will hel
 
 1. **Fork and Clone**
    ```bash
-   git clone https://github.com/angelxmoreno/my-bun-project.git
+   git clone https://github.com/AccordJS/accordjs.git
    cd my-bun-project
    ```
 
@@ -155,8 +155,8 @@ git commit -m "docs: update installation instructions"
 
 ## Need Help?
 
-- 📝 Check existing [issues](https://github.com/angelxmoreno/my-bun-project/issues)
-- 💬 Start a [discussion](https://github.com/angelxmoreno/my-bun-project/discussions)
+- 📝 Check existing [issues](https://github.com/AccordJS/accordjs/issues)
+- 💬 Start a [discussion](https://github.com/AccordJS/accordjs/discussions)
 - 📧 Contact maintainers: [angel@angelxmoreno.com](mailto:angel@angelxmoreno.com)
 
 ## License
