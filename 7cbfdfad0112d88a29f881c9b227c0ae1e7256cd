@@ -1,0 +1,35 @@
+src/index.ts
+  f3c640063f539b7b 1-11
+tests/unit/unit.test.ts
+  f3c640063f539b7b 3-4,8,10-11
+src/types/events.ts
+  f3c640063f539b7b 1-9,11-71,73-82
+tests/unit/types.test.ts
+  f3c640063f539b7b 3-33,35-52,54-91,95-117
+src/utils/createLogger.ts
+  f3c640063f539b7b 1-19
+src/types/plugin.ts
+  f3c640063f539b7b 1-29
+src/types/index.ts
+  f3c640063f539b7b 1-6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.12",
+  "base_commit_sha": "7cbfdfad0112d88a29f881c9b227c0ae1e7256cd",
+  "prompts": {
+    "f3c640063f539b7b": {
+      "agent_id": {
+        "tool": "gemini",
+        "id": "524f3ea8-ee6a-41b7-b473-fcc7a88702be",
+        "model": "gemini-3-flash-preview"
+      },
+      "human_author": "Angel S. Moreno <angelxmoreno@gmail.com>",
+      "messages": [],
+      "total_additions": 396,
+      "total_deletions": 116,
+      "accepted_lines": 260,
+      "overriden_lines": 6
+    }
+  }
+}
