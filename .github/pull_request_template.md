@@ -1,6 +1,6 @@
 ## Description
 
-Brief description of changes made in this PR.
+Brief description of changes made to AccordJS in this PR.
 
 ## Type of Change
 
@@ -8,6 +8,7 @@ Please delete options that are not relevant.
 
 - [ ] Bug fix (non-breaking change which fixes an issue)
 - [ ] New feature (non-breaking change which adds functionality)
+- [ ] New plugin (adds functionality via the plugin system)
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 - [ ] Documentation update
 - [ ] Refactoring (no functional changes)
@@ -20,6 +21,7 @@ Please delete options that are not relevant.
 - [ ] I have added tests that prove my fix is effective or that my feature works
 - [ ] New and existing unit tests pass locally with my changes
 - [ ] I have run `bun run check` and all checks pass
+- [ ] Plugin functionality has been tested with the event bus (if applicable)
 
 ## Documentation
 
