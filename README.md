@@ -157,6 +157,22 @@ bun run build
 bun run check-types
 ```
 
+## Vendored Dependencies
+
+AccordJS currently vendors the following packages to avoid GitHub Package Registry authentication requirements:
+
+- **`src/vendor/config-schema/`** - Originally `@axm-internal/config-schema`
+  - Provides automatic environment variable parsing with Zod validation
+  - Will migrate back to npm package when publicly available
+  - Dependencies: `dotenv`, `dotenv-expand`, `zod`
+
+### Migration Plan
+When `@axm-internal/config-schema` becomes publicly available on npm:
+1. Remove `src/vendor/config-schema/` directory
+2. Add `@axm-internal/config-schema` to package.json dependencies
+3. Update import in `src/config.ts` from `./vendor/config-schema` to `@axm-internal/config-schema`
+4. Remove vendored dependency notes from documentation
+
 ## Contributing
 
 Please read our [Contributing Guide](CONTRIBUTING.md) for details on:

@@ -41,7 +41,9 @@ Based on the Discord Bot Framework Architecture, here's a phase-by-phase impleme
 - `tests/unit/config.test.ts` - Configuration validation tests
 
 **Implementation Notes:**
-- Uses `@axm-internal/config-schema` for automatic environment variable parsing
+- Uses vendored `config-schema` (originally `@axm-internal/config-schema`) for automatic environment variable parsing
+- Package is vendored in `src/vendor/config-schema/` to avoid GitHub Package Registry authentication
+- Will migrate back to npm package when publicly available
 - Single file approach instead of multiple config files for simplicity
 - Comprehensive JSDoc documentation for all configuration options
 - Validates Discord token, client ID, and optional guild ID

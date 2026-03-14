@@ -1,15 +1,18 @@
 /**
  * AccordJS Configuration Schema and Validation
  *
- * Uses @axm-internal/config-schema for automatic environment variable
+ * Uses vendored config-schema for automatic environment variable
  * parsing with Zod validation for type safety and runtime validation.
  *
  * Configuration is loaded from environment variables and validated on startup.
  * See .env.example for required environment variables.
+ *
+ * NOTE: config-schema is temporarily vendored to avoid GitHub Package Registry
+ * authentication requirements. Will migrate back to npm when publicly available.
  */
 
-import { autoEnv, defineConfig, env } from '@axm-internal/config-schema';
 import { z } from 'zod';
+import { autoEnv, defineConfig, env } from './vendor/config-schema';
 
 /**
  * Valid Node.js environment values
