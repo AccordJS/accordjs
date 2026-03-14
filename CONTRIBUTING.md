@@ -1,6 +1,6 @@
-# Contributing Guide
+# Contributing to AccordJS
 
-Thank you for your interest in contributing to this project! This guide will help you get started.
+Thank you for your interest in contributing to AccordJS! This guide will help you get started with contributing to our Discord bot framework.
 
 ## Development Setup
 
@@ -14,8 +14,8 @@ Thank you for your interest in contributing to this project! This guide will hel
 
 1. **Fork and Clone**
    ```bash
-   git clone https://github.com/angelxmoreno/my-bun-project.git
-   cd my-bun-project
+   git clone https://github.com/AccordJS/accordjs.git
+   cd accordjs
    ```
 
 2. **Install Dependencies**
@@ -127,19 +127,49 @@ git commit -m "docs: update installation instructions"
 - **Testing**: Describe how you tested your changes
 - **Documentation**: Update docs if needed
 
-## Project Structure
+## AccordJS Architecture
+
+AccordJS follows a clean, event-driven architecture. Understanding this structure will help you contribute effectively:
+
+### Core Principles
+- **Discord Client Isolation**: Discord.js objects stay in the gateway layer
+- **Event Normalization**: Discord events are transformed into internal types
+- **Type Safety**: Zero `any` usage with strict TypeScript
+- **Plugin Architecture**: Features implemented as independent plugins
+
+### Project Structure
 
 ```
-.
-├── src/                 # Source code
-│   └── index.ts        # Main entry point
-├── .github/            # GitHub templates and workflows
-├── biome.json          # Biome configuration
-├── tsconfig.json       # TypeScript configuration
-├── lefthook.yml        # Git hooks configuration
-├── package.json        # Dependencies and scripts
-└── README.md           # Project documentation
+src/
+├── bot/                    # Discord gateway layer
+│   ├── client.ts          # Discord client initialization
+│   ├── gateway.ts         # Event normalization
+│   └── intents.ts         # Discord intents
+├── bus/                   # Event distribution
+│   └── eventBus.ts       # Typed event bus
+├── events/                # Event types and normalization
+│   ├── normalizeMessage.ts
+│   ├── normalizeMember.ts
+│   └── types.ts
+├── plugins/               # Plugin implementations
+│   ├── commands/         # Command handling
+│   ├── logging/          # Event logging
+│   └── analytics/        # Analytics processing
+├── services/             # External integrations
+│   ├── database.ts
+│   └── redis.ts
+├── types/                # Core framework types
+│   └── events.ts
+└── index.ts              # Main entry point
 ```
+
+### Contributing to Plugins
+
+When adding new plugins:
+1. Subscribe to events via the event bus
+2. Use normalized event types, not Discord.js objects
+3. Follow the existing plugin patterns
+4. Add proper TypeScript types
 
 ## Scripts
 
@@ -155,8 +185,8 @@ git commit -m "docs: update installation instructions"
 
 ## Need Help?
 
-- 📝 Check existing [issues](https://github.com/angelxmoreno/my-bun-project/issues)
-- 💬 Start a [discussion](https://github.com/angelxmoreno/my-bun-project/discussions)
+- 📝 Check existing [issues](https://github.com/AccordJS/accordjs/issues)
+- 💬 Start a [discussion](https://github.com/AccordJS/accordjs/discussions)
 - 📧 Contact maintainers: [angel@angelxmoreno.com](mailto:angel@angelxmoreno.com)
 
 ## License
