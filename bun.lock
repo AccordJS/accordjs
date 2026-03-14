@@ -4,24 +4,28 @@
     "": {
       "name": "accordjs",
       "dependencies": {
-        "discord.js": "latest",
-        "dotenv": "latest",
-        "pino": "latest",
-        "pino-pretty": "latest",
-        "zod": "latest",
+        "discord.js": "14.25.1",
+        "dotenv": "^17.3.1",
+        "pino": "^10.3.1",
+        "pino-pretty": "^13.1.3",
+        "undici": "^7.24.3",
+        "zod": "^4.3.6",
       },
       "devDependencies": {
-        "@biomejs/biome": "latest",
-        "@commitlint/cli": "latest",
-        "@commitlint/config-conventional": "latest",
-        "@types/bun": "latest",
-        "@types/node": "latest",
-        "jscpd": "latest",
-        "jsinspect-plus": "latest",
-        "lefthook": "latest",
-        "typescript": "latest",
+        "@biomejs/biome": "^2.4.7",
+        "@commitlint/cli": "^20.4.4",
+        "@commitlint/config-conventional": "^20.4.4",
+        "@types/bun": "^1.3.10",
+        "@types/node": "^25.5.0",
+        "jscpd": "^4.0.8",
+        "jsinspect-plus": "^3.1.3",
+        "lefthook": "^2.1.4",
+        "typescript": "^5.9.3",
       },
     },
+  },
+  "overrides": {
+    "undici": "^7.24.3",
   },
   "packages": {
     "@babel/code-frame": ["@babel/code-frame@7.29.0", "", { "dependencies": { "@babel/helper-validator-identifier": "^7.28.5", "js-tokens": "^4.0.0", "picocolors": "^1.1.1" } }, "sha512-9NhCeYjq9+3uxgdtp20LSiJXJvN0FeCtNGpJxuMFZ1Kv3cWUNb6DOhJwUvcVCzKGR66cw4njwM6hrJLqgOwbcw=="],
@@ -544,7 +548,7 @@
 
     "typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
 
-    "undici": ["undici@6.21.3", "", {}, "sha512-gBLkYIlEnSp8pFbT64yFgGE6UIB9tAkhukC23PmMDCe5Nd+cRqKxSjw5y54MK2AZMgZfJWMaNE4nYUHgi1XEOw=="],
+    "undici": ["undici@7.24.3", "", {}, "sha512-eJdUmK/Wrx2d+mnWWmwwLRyA7OQCkLap60sk3dOK4ViZR7DKwwptwuIvFBg2HaiP9ESaEdhtpSymQPvytpmkCA=="],
 
     "undici-types": ["undici-types@7.18.2", "", {}, "sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w=="],
 

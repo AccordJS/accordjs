@@ -198,8 +198,8 @@ Based on the Discord Bot Framework Architecture, here's a phase-by-phase impleme
 
 ### Dependencies to Add
 ```bash
-bun add discord.js@^14.25.1 zod@^4.0.0 pino pino-pretty dotenv
-bun add -d @types/node
+bun add discord.js@^14.25.1 zod@^4.3.6 pino@^10.3.1 pino-pretty@^13.1.3 dotenv@^17.3.1
+bun add -d @types/node@^25.5.0
 ```
 
 ### Key Architectural Principles
