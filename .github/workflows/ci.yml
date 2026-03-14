@@ -30,6 +30,9 @@ jobs:
         with:
           bun-version: ${{ matrix.bun-version }}
 
+      - name: Setup authentication for private packages
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> ~/.npmrc
+
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
@@ -59,6 +62,9 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Setup authentication for private packages
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> ~/.npmrc
+
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
@@ -73,6 +79,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+
+      - name: Setup authentication for private packages
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> ~/.npmrc
 
       - name: Dependency Review
         uses: actions/dependency-review-action@v4
