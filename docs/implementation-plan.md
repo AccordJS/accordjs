@@ -3,21 +3,27 @@
 Based on the Discord Bot Framework Architecture, here's a phase-by-phase implementation plan for you to follow. Discord.js v14.25.1 (latest stable) will be used.
 
 ## Phase 1: Project Foundation & Dependencies
-**Goal:** Set up core dependencies, basic TypeScript configuration, and foundational types
+**Goal:** Set up core dependencies, basic TypeScript configuration, and foundational Zod schemas
 
 **Files to Create:**
-- `src/types/events.ts` - Core event type definitions
+- `src/types/events.ts` - Core event Zod schemas and type definitions
 - `src/types/plugin.ts` - Plugin interface definitions
-- `src/types/index.ts` - Type exports
+- `src/types/index.ts` - Schema and type exports
 
 **Files to Modify:**
 - `package.json` - Add discord.js@14.25.1, zod@4.x, pino, pino-pretty
 - `src/index.ts` - Basic framework entry point
 
 **Tests to Create:**
-- `tests/unit/types.test.ts` - Type validation tests
+- `tests/unit/types.test.ts` - Schema validation and type tests
 
-**Commit Message:** `feat: add core dependencies and foundational types`
+**Implementation Notes:**
+- Use Zod schemas for all event definitions, not plain TypeScript types
+- Generate TypeScript types using `z.infer<typeof Schema>`
+- Enables runtime validation for Discord.js event normalization
+- Example: `MessageCreateEventSchema = z.object({ type: z.literal('MESSAGE_CREATE'), ... })`
+
+**Commit Message:** `feat: add core dependencies and foundational Zod schemas`
 
 ---
 
@@ -49,7 +55,7 @@ Based on the Discord Bot Framework Architecture, here's a phase-by-phase impleme
 - `src/bus/types.ts` - Event bus specific types
 
 **Files to Modify:**
-- `src/types/events.ts` - Add event map definitions
+- `src/types/events.ts` - Add event map schemas and inferred types
 
 **Tests to Create:**
 - `tests/unit/bus/eventBus.test.ts` - Event bus functionality tests
@@ -64,15 +70,15 @@ Based on the Discord Bot Framework Architecture, here's a phase-by-phase impleme
 **Files to Create:**
 - `src/bot/client.ts` - Discord client initialization
 - `src/bot/intents.ts` - Discord intents configuration
-- `src/bot/gateway.ts` - Gateway adapter for event normalization
-- `src/events/normalizeMessage.ts` - Message event normalization
-- `src/events/normalizeMember.ts` - Member event normalization
-- `src/events/types.ts` - Normalized event type definitions
+- `src/bot/gateway.ts` - Gateway adapter for event normalization using Zod validation
+- `src/events/normalizeMessage.ts` - Message event normalization with schema validation
+- `src/events/normalizeMember.ts` - Member event normalization with schema validation
+- `src/events/types.ts` - Additional normalized event schemas (if needed)
 
 **Tests to Create:**
 - `tests/unit/bot/client.test.ts` - Client initialization tests
-- `tests/unit/events/normalizeMessage.test.ts` - Message normalization tests
-- `tests/unit/events/normalizeMember.test.ts` - Member normalization tests
+- `tests/unit/events/normalizeMessage.test.ts` - Message normalization and schema validation tests
+- `tests/unit/events/normalizeMember.test.ts` - Member normalization and schema validation tests
 
 **Commit Message:** `feat: add Discord gateway integration and event normalization`
 
@@ -204,9 +210,22 @@ bun add -d @types/node
 
 ### Testing Strategy
 - Unit tests for each new file/module
+- Schema validation tests using Zod `.safeParse()` and `.parse()`
 - Integration tests for phase 8 (framework integration)
 - Use Bun's built-in test runner
 - Maintain test coverage as you implement
+
+### Zod Schema Testing Examples
+```typescript
+// Test valid data
+const result = MessageCreateEventSchema.safeParse(validEventData);
+expect(result.success).toBe(true);
+
+// Test invalid data
+const badResult = MessageCreateEventSchema.safeParse(invalidData);
+expect(badResult.success).toBe(false);
+expect(badResult.error.issues).toHaveLength(1);
+```
 
 ### Development Tips
 - Follow existing code style (4 spaces, single quotes, semicolons)
