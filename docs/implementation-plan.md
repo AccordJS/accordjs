@@ -31,17 +31,23 @@ Based on the Discord Bot Framework Architecture, here's a phase-by-phase impleme
 **Goal:** Environment configuration, bot token management, and configuration validation
 
 **Files to Create:**
-- `src/config/environment.ts` - Environment variable handling
-- `src/config/validation.ts` - Configuration validation with Zod
-- `src/config/types.ts` - Configuration type definitions
+- `src/config.ts` - Consolidated configuration schema and validation with Zod
 - `.env.example` - Environment template for users
 
 **Files to Modify:**
-- `package.json` - Add dotenv dependency
 - `src/index.ts` - Load and validate configuration
 
 **Tests to Create:**
-- `tests/unit/config/validation.test.ts` - Configuration validation tests
+- `tests/unit/config.test.ts` - Configuration validation tests
+
+**Implementation Notes:**
+- Uses vendored `config-schema` (originally `@axm-internal/config-schema`) for automatic environment variable parsing
+- Package is vendored in `src/vendor/config-schema/` to avoid GitHub Package Registry authentication
+- Will migrate back to npm package when publicly available
+- Single file approach instead of multiple config files for simplicity
+- Comprehensive JSDoc documentation for all configuration options
+- Validates Discord token, client ID, and optional guild ID
+- Supports all Pino log levels with intelligent defaults
 
 **Commit Message:** `feat: add configuration management and environment validation`
 
