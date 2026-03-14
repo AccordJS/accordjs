@@ -1,6 +1,6 @@
-import { getSchemaMeta } from '@axm-internal/zod-helpers';
 import { ZodDefault, ZodObject, ZodOptional, type ZodType, z } from 'zod';
 import type { InternalNode, InternalObjectNode, SchemaMeta } from './types';
+import { getSchemaMeta } from './utils';
 
 /**
  * Walk a root Zod schema to build the internal tree.
