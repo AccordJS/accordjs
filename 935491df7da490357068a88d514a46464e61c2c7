@@ -1,0 +1,23 @@
+README.md
+  f3c640063f539b7b 17,60,63-64,74,92,100-105,115,124,129,132-134,157,185,191,199
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.12",
+  "base_commit_sha": "935491df7da490357068a88d514a46464e61c2c7",
+  "prompts": {
+    "f3c640063f539b7b": {
+      "agent_id": {
+        "tool": "gemini",
+        "id": "524f3ea8-ee6a-41b7-b473-fcc7a88702be",
+        "model": "gemini-3-flash-preview"
+      },
+      "human_author": "Angel S. Moreno <angelxmoreno@gmail.com>",
+      "messages": [],
+      "total_additions": 23,
+      "total_deletions": 21,
+      "accepted_lines": 22,
+      "overriden_lines": 0
+    }
+  }
+}
