@@ -2,6 +2,8 @@
  * Plugin interface definitions for AccordJS
  */
 
+import type { PluginContext } from '@app/types/plugin-context';
+
 /**
  * Basic plugin interface
  */
@@ -25,5 +27,5 @@ export interface Plugin {
      * Initialization method for the plugin
      * @param ctx - Plugin context providing access to framework features
      */
-    register(ctx: unknown): void | Promise<void>;
+    register(ctx: PluginContext): void | Promise<void>;
 }

@@ -11,4 +11,4 @@ export const DEFAULT_INTENTS = [
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.DirectMessages,
-];
+] as const;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
+import { normalizeMember } from '@app/events/normalize-member';
 import type { Guild, GuildMember, User } from 'discord.js';
-import { normalizeMember } from '../../../src/events/normalize-member.ts';
 
 describe('Member Join Normalization', () => {
     it('should correctly normalize a member join event', () => {
@@ -46,18 +46,43 @@ describe('Member Join Normalization', () => {
             joinedTimestamp: null,
         } as GuildMember;
 
+        const beforeCall = Date.now();
         const normalized = normalizeMember(mockMember);
+        const afterCall = Date.now();
 
-        expect(normalized.joinedAt).toBeGreaterThan(0);
+        expect(normalized.joinedAt).toBeGreaterThanOrEqual(beforeCall);
+        expect(normalized.joinedAt).toBeLessThanOrEqual(afterCall);
         expect(normalized.username).toBe('newmember');
     });
 
-    it('should throw if critical data is missing', () => {
+    it('should throw TypeError when accessing properties on undefined guild', () => {
         const mockMember = {
             id: 'user-789',
-            // Missing guild and user
-        } as GuildMember;
+            guild: undefined,
+            user: undefined,
+            // Missing guild and user - this will cause TypeError when accessing .guild.id
+        } as unknown as GuildMember;
+
+        expect(() => normalizeMember(mockMember)).toThrow(TypeError);
+        // The specific error message can vary between environments (Node.js vs Bun)
+        // Just verify it's a TypeError related to accessing properties on undefined
+        expect(() => normalizeMember(mockMember)).toThrow(/undefined.*id|guild.*id/);
+    });
+
+    it('should throw ZodError when invalid data types are provided', () => {
+        const mockMember = {
+            id: 'user-789',
+            guild: { id: 123 }, // Invalid: number instead of string
+            user: { username: 'testuser' },
+            joinedTimestamp: null,
+        } as unknown as GuildMember;
 
         expect(() => normalizeMember(mockMember)).toThrow();
+        // The error should be a Zod validation error due to invalid serverId type
+        try {
+            normalizeMember(mockMember);
+        } catch (error) {
+            expect((error as Error).constructor.name).toBe('ZodError');
+        }
     });
 });

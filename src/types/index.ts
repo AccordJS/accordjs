@@ -2,5 +2,6 @@
  * Type exports for AccordJS core
  */
 
-export * from './events.ts';
-export * from './plugin.ts';
+export * from '@app/types/events';
+export * from '@app/types/plugin';
+export * from '@app/types/plugin-context';

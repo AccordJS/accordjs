@@ -1,2 +1,2 @@
-export * from './in-memory-event-bus.ts';
-export * from './types.ts';
+export * from '@app/bus/in-memory-event-bus';
+export * from '@app/bus/types';

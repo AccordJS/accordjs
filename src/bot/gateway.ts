@@ -1,6 +1,7 @@
 import type { EventBus } from '@app/bus';
-import { normalizeMember } from '@app/events/normalize-member.ts';
-import { normalizeMessage } from '@app/events/normalize-message.ts';
+import { normalizeMember } from '@app/events/normalize-member';
+import { normalizeMessage } from '@app/events/normalize-message';
+import { createLogger } from '@app/utils/create-logger';
 import type { Client, GuildMember, Message } from 'discord.js';
 
 /**
@@ -12,6 +13,7 @@ import type { Client, GuildMember, Message } from 'discord.js';
 export class GatewayAdapter {
     protected client: Client;
     protected eventBus: EventBus;
+    protected logger = createLogger('GatewayAdapter');
 
     /**
      * @param client - The initialized Discord.js client.
@@ -31,7 +33,7 @@ export class GatewayAdapter {
                 const event = normalizeMessage(message);
                 this.eventBus.publish('MESSAGE_CREATE', event);
             } catch (error) {
-                console.error('Error normalizing messageCreate event:', error);
+                this.logger.error(error, 'Error normalizing messageCreate event');
             }
         });
 
@@ -40,7 +42,7 @@ export class GatewayAdapter {
                 const event = normalizeMember(member);
                 this.eventBus.publish('MEMBER_JOIN', event);
             } catch (error) {
-                console.error('Error normalizing guildMemberAdd event:', error);
+                this.logger.error(error, 'Error normalizing guildMemberAdd event');
             }
         });
     }
