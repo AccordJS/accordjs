@@ -15,6 +15,7 @@ export const EventTypeSchema = z.enum([
     'COMMAND_DISPATCH',
     'COMMAND_EXECUTE',
     'COMMAND_ERROR',
+    'COMMAND_PERMISSION_DENIED',
 ]);
 
 export type EventType = z.infer<typeof EventTypeSchema>;
@@ -75,6 +76,31 @@ export const MemberJoinEventSchema = DiscordEventSchema.extend({
 export type MemberJoinEvent = z.infer<typeof MemberJoinEventSchema>;
 
 /**
+ * Normalized message delete event schema
+ */
+export const MessageDeleteEventSchema = ChannelEventSchema.extend({
+    type: z.literal('MESSAGE_DELETE'),
+    messageId: z.string(),
+    authorId: z.string(),
+    deletedAt: z.number().int().positive(),
+});
+
+export type MessageDeleteEvent = z.infer<typeof MessageDeleteEventSchema>;
+
+/**
+ * Normalized member leave event schema
+ */
+export const MemberLeaveEventSchema = DiscordEventSchema.extend({
+    type: z.literal('MEMBER_LEAVE'),
+    serverId: z.string(), // Required for member leaves
+    username: z.string(),
+    leftAt: z.number().int().positive(),
+    reason: z.string().optional(), // kick, ban, voluntary leave, etc.
+});
+
+export type MemberLeaveEvent = z.infer<typeof MemberLeaveEventSchema>;
+
+/**
  * Normalized command dispatch event schema
  */
 export const CommandDispatchEventSchema = ChannelEventSchema.extend({
@@ -109,14 +135,29 @@ export const CommandErrorEventSchema = ChannelEventSchema.extend({
 export type CommandErrorEvent = z.infer<typeof CommandErrorEventSchema>;
 
 /**
+ * Normalized command permission denied event schema
+ */
+export const CommandPermissionDeniedEventSchema = ChannelEventSchema.extend({
+    type: z.literal('COMMAND_PERMISSION_DENIED'),
+    commandName: z.string(),
+    requiredPermissions: z.array(z.string()),
+    reason: z.string(),
+});
+
+export type CommandPermissionDeniedEvent = z.infer<typeof CommandPermissionDeniedEventSchema>;
+
+/**
  * Discriminated union of all supported bot event schemas
  */
 export const BotEventSchema = z.discriminatedUnion('type', [
     MessageCreateEventSchema,
+    MessageDeleteEventSchema,
     MemberJoinEventSchema,
+    MemberLeaveEventSchema,
     CommandDispatchEventSchema,
     CommandExecuteEventSchema,
     CommandErrorEventSchema,
+    CommandPermissionDeniedEventSchema,
 ]);
 
 export type BotEvent = z.infer<typeof BotEventSchema>;
@@ -126,10 +167,13 @@ export type BotEvent = z.infer<typeof BotEventSchema>;
  */
 export const EventMapSchemas = {
     MESSAGE_CREATE: MessageCreateEventSchema,
+    MESSAGE_DELETE: MessageDeleteEventSchema,
     MEMBER_JOIN: MemberJoinEventSchema,
+    MEMBER_LEAVE: MemberLeaveEventSchema,
     COMMAND_DISPATCH: CommandDispatchEventSchema,
     COMMAND_EXECUTE: CommandExecuteEventSchema,
     COMMAND_ERROR: CommandErrorEventSchema,
+    COMMAND_PERMISSION_DENIED: CommandPermissionDeniedEventSchema,
 } as const;
 
 /**

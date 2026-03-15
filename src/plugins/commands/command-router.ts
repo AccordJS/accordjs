@@ -15,6 +15,7 @@ export class CommandRouterPlugin extends BasePlugin {
     protected registry: CommandRegistry;
     protected parser: CommandParser;
     protected cooldowns = new Map<string, Map<string, number>>();
+    protected cooldownCleanupTimers = new Map<string, Map<string, NodeJS.Timeout>>();
 
     /**
      * @param registry - Command registry for command management.
@@ -51,11 +52,26 @@ export class CommandRouterPlugin extends BasePlugin {
                 return;
             }
 
-            // 1. Check Permissions (Placeholder for now)
+            // 1. Check Permissions (Security-first: fail closed if permissions are defined)
             if (command.permissions && command.permissions.length > 0) {
-                // In a real app, we'd check against Discord member permissions
-                // For now, we'll just log that we are skipping permission check
-                context.logger.debug(`Permission check skipped for command '${command.name}' (not yet implemented)`);
+                // Security-first approach: deny access if permissions are defined but not validated
+                context.logger.warn(
+                    `Command '${command.name}' requires permissions ${JSON.stringify(command.permissions)} but permission validation is not implemented. Access denied.`
+                );
+
+                // Publish a permission denied event for auditing
+                context.eventBus.publish('COMMAND_PERMISSION_DENIED', {
+                    type: 'COMMAND_PERMISSION_DENIED',
+                    timestamp: Date.now(),
+                    userId: event.userId,
+                    channelId: event.channelId,
+                    serverId: event.serverId,
+                    commandName: command.name,
+                    requiredPermissions: command.permissions,
+                    reason: 'Permission validation not implemented',
+                });
+
+                return; // Fail closed - deny access
             }
 
             // 2. Check Cooldown
@@ -72,8 +88,12 @@ export class CommandRouterPlugin extends BasePlugin {
                     return;
                 }
 
+                // Set new cooldown timestamp
                 timestamps.set(event.userId, now);
                 this.cooldowns.set(command.name, timestamps);
+
+                // Schedule cleanup to prevent memory leaks
+                this.scheduleCooldownCleanup(command.name, event.userId, command.cooldown, context);
             }
 
             await this.dispatch(command, event, parseResult.args ?? [], context);
@@ -146,6 +166,71 @@ export class CommandRouterPlugin extends BasePlugin {
                 commandName: command.name,
                 error: errorMessage,
             });
+        }
+    }
+
+    /**
+     * Schedules cleanup of a cooldown entry to prevent memory leaks.
+     *
+     * @param commandName - The name of the command.
+     * @param userId - The user ID for the cooldown.
+     * @param cooldownMs - The cooldown duration in milliseconds.
+     * @param context - The plugin context for logging.
+     */
+    protected scheduleCooldownCleanup(
+        commandName: string,
+        userId: string,
+        cooldownMs: number,
+        context: PluginContext
+    ): void {
+        try {
+            // Clear any existing cleanup timer for this command/user combination
+            const commandTimers = this.cooldownCleanupTimers.get(commandName) ?? new Map<string, NodeJS.Timeout>();
+            const existingTimer = commandTimers.get(userId);
+            if (existingTimer) {
+                clearTimeout(existingTimer);
+            }
+
+            // Schedule cleanup after cooldown expires
+            const cleanupTimer = setTimeout(() => {
+                try {
+                    // Remove the cooldown entry
+                    const timestamps = this.cooldowns.get(commandName);
+                    if (timestamps) {
+                        timestamps.delete(userId);
+                        // If no more users have cooldowns for this command, remove the command entry
+                        if (timestamps.size === 0) {
+                            this.cooldowns.delete(commandName);
+                        }
+                    }
+
+                    // Remove the cleanup timer
+                    const timers = this.cooldownCleanupTimers.get(commandName);
+                    if (timers) {
+                        timers.delete(userId);
+                        // If no more timers for this command, remove the command entry
+                        if (timers.size === 0) {
+                            this.cooldownCleanupTimers.delete(commandName);
+                        }
+                    }
+
+                    context.logger.debug(`Cleaned up cooldown for user ${userId} on command '${commandName}'`);
+                } catch (cleanupError) {
+                    context.logger.error(
+                        cleanupError,
+                        `Failed to clean up cooldown for user ${userId} on command '${commandName}'`
+                    );
+                }
+            }, cooldownMs);
+
+            // Store the cleanup timer
+            commandTimers.set(userId, cleanupTimer);
+            this.cooldownCleanupTimers.set(commandName, commandTimers);
+        } catch (error) {
+            context.logger.error(
+                error,
+                `Failed to schedule cooldown cleanup for user ${userId} on command '${commandName}'`
+            );
         }
     }
 
