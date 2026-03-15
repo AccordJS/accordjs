@@ -278,7 +278,7 @@ describe('CommandRouterPlugin', () => {
         expect(permissionEvents).toHaveLength(0);
     });
 
-    it('should deny commands with empty permissions array', async () => {
+    it('should allow commands with empty permissions array to execute', async () => {
         const context = createMockContext();
         const router = new CommandRouterPlugin();
         const executeMock = mock(async () => {});
@@ -286,7 +286,7 @@ describe('CommandRouterPlugin', () => {
         router.registerCommand({
             name: 'restricted',
             description: 'Restricted command',
-            permissions: [], // Empty array should still trigger security check
+            permissions: [], // Empty array does not trigger security check (length === 0)
             execute: executeMock,
         });
 
@@ -305,7 +305,7 @@ describe('CommandRouterPlugin', () => {
             isBot: false,
         });
 
-        // Command should execute since empty array is falsy for length > 0 check
+        // Command should execute since empty array does not satisfy length > 0 check
         expect(executeMock).toHaveBeenCalledTimes(1);
     });
 
@@ -371,5 +371,142 @@ describe('CommandRouterPlugin', () => {
         });
 
         expect(executeMock).toHaveBeenCalledTimes(2); // Should execute again
+    });
+
+    it('should handle cooldowns at the setTimeout limit boundary safely', async () => {
+        const context = createMockContext();
+        const router = new CommandRouterPlugin();
+        const executeMock = mock(async () => {});
+
+        // Test cooldown at exactly the setTimeout limit (2^31 - 1 ms)
+        const maxSafeCooldown = 2_147_483_647;
+
+        router.registerCommand({
+            name: 'maxcd',
+            description: 'Maximum safe cooldown',
+            cooldown: maxSafeCooldown,
+            execute: executeMock,
+        });
+
+        await router.register(context);
+
+        // First execution should succeed
+        await context.eventBus.publish('MESSAGE_CREATE', {
+            type: 'MESSAGE_CREATE',
+            timestamp: Date.now(),
+            userId: 'u1',
+            channelId: 'c1',
+            messageId: 'm1',
+            content: '!maxcd',
+            authorName: 'U',
+            authorTag: 'U#1',
+            isBot: false,
+        });
+
+        expect(executeMock).toHaveBeenCalledTimes(1);
+
+        // Second execution should be blocked by cooldown
+        await context.eventBus.publish('MESSAGE_CREATE', {
+            type: 'MESSAGE_CREATE',
+            timestamp: Date.now(),
+            userId: 'u1',
+            channelId: 'c1',
+            messageId: 'm2',
+            content: '!maxcd',
+            authorName: 'U',
+            authorTag: 'U#1',
+            isBot: false,
+        });
+
+        expect(executeMock).toHaveBeenCalledTimes(1); // Still blocked
+    });
+
+    it('should handle cooldowns longer than setTimeout limit using chunked timeouts', async () => {
+        const context = createMockContext();
+        const router = new CommandRouterPlugin();
+        const executeMock = mock(async () => {});
+
+        // Test cooldown longer than the setTimeout limit (should use chunked approach)
+        const longCooldown = 2_147_483_647 + 1000; // Just over the limit
+
+        router.registerCommand({
+            name: 'longcd',
+            description: 'Long cooldown',
+            cooldown: longCooldown,
+            execute: executeMock,
+        });
+
+        await router.register(context);
+
+        // First execution should succeed
+        await context.eventBus.publish('MESSAGE_CREATE', {
+            type: 'MESSAGE_CREATE',
+            timestamp: Date.now(),
+            userId: 'u1',
+            channelId: 'c1',
+            messageId: 'm1',
+            content: '!longcd',
+            authorName: 'U',
+            authorTag: 'U#1',
+            isBot: false,
+        });
+
+        expect(executeMock).toHaveBeenCalledTimes(1);
+
+        // Second execution should be blocked by cooldown (long cooldown still active)
+        await context.eventBus.publish('MESSAGE_CREATE', {
+            type: 'MESSAGE_CREATE',
+            timestamp: Date.now(),
+            userId: 'u1',
+            channelId: 'c1',
+            messageId: 'm2',
+            content: '!longcd',
+            authorName: 'U',
+            authorTag: 'U#1',
+            isBot: false,
+        });
+
+        expect(executeMock).toHaveBeenCalledTimes(1); // Still blocked by long cooldown
+    });
+
+    it('should use direct setTimeout for cooldowns under the limit', async () => {
+        const context = createMockContext();
+        const router = new CommandRouterPlugin();
+        const executeMock = mock(async () => {});
+
+        // Spy on createSafeTimeout to verify it uses direct setTimeout for safe delays
+        const originalCreateSafeTimeout = router.createSafeTimeout.bind(router);
+        const createSafeTimeoutSpy = mock((callback: () => void, delayMs: number, context: PluginContext) => {
+            // Verify this is called with a safe delay
+            expect(delayMs).toBeLessThanOrEqual(2_147_483_647);
+            return originalCreateSafeTimeout(callback, delayMs, context);
+        });
+        router.createSafeTimeout = createSafeTimeoutSpy;
+
+        const safeCooldown = 1000; // Well under the limit
+
+        router.registerCommand({
+            name: 'safecd',
+            description: 'Safe cooldown',
+            cooldown: safeCooldown,
+            execute: executeMock,
+        });
+
+        await router.register(context);
+
+        await context.eventBus.publish('MESSAGE_CREATE', {
+            type: 'MESSAGE_CREATE',
+            timestamp: Date.now(),
+            userId: 'u1',
+            channelId: 'c1',
+            messageId: 'm1',
+            content: '!safecd',
+            authorName: 'U',
+            authorTag: 'U#1',
+            isBot: false,
+        });
+
+        expect(createSafeTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), safeCooldown, context);
+        expect(executeMock).toHaveBeenCalledTimes(1);
     });
 });

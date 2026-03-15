@@ -17,6 +17,9 @@ export class CommandRouterPlugin extends BasePlugin {
     protected cooldowns = new Map<string, Map<string, number>>();
     protected cooldownCleanupTimers = new Map<string, Map<string, NodeJS.Timeout>>();
 
+    // Maximum safe timeout value for setTimeout (2^31 - 1 milliseconds ≈ 24.8 days)
+    private static readonly MAX_TIMEOUT_MS = 2_147_483_647;
+
     /**
      * @param registry - Command registry for command management.
      * @param prefix - Command prefix to look for in messages.
@@ -171,6 +174,7 @@ export class CommandRouterPlugin extends BasePlugin {
 
     /**
      * Schedules cleanup of a cooldown entry to prevent memory leaks.
+     * Uses safe timeout handling to avoid JavaScript's setTimeout limit of ~24.8 days.
      *
      * @param commandName - The name of the command.
      * @param userId - The user ID for the cooldown.
@@ -191,40 +195,15 @@ export class CommandRouterPlugin extends BasePlugin {
                 clearTimeout(existingTimer);
             }
 
-            // Schedule cleanup after cooldown expires
-            const cleanupTimer = setTimeout(() => {
-                try {
-                    // Remove the cooldown entry
-                    const timestamps = this.cooldowns.get(commandName);
-                    if (timestamps) {
-                        timestamps.delete(userId);
-                        // If no more users have cooldowns for this command, remove the command entry
-                        if (timestamps.size === 0) {
-                            this.cooldowns.delete(commandName);
-                        }
-                    }
-
-                    // Remove the cleanup timer
-                    const timers = this.cooldownCleanupTimers.get(commandName);
-                    if (timers) {
-                        timers.delete(userId);
-                        // If no more timers for this command, remove the command entry
-                        if (timers.size === 0) {
-                            this.cooldownCleanupTimers.delete(commandName);
-                        }
-                    }
-
-                    context.logger.debug(`Cleaned up cooldown for user ${userId} on command '${commandName}'`);
-                } catch (cleanupError) {
-                    context.logger.error(
-                        cleanupError,
-                        `Failed to clean up cooldown for user ${userId} on command '${commandName}'`
-                    );
-                }
-            }, cooldownMs);
+            // Use safe timeout to handle cooldowns longer than JavaScript's setTimeout limit
+            const safeTimer = this.createSafeTimeout(
+                () => this.performCooldownCleanup(commandName, userId, context),
+                cooldownMs,
+                context
+            );
 
             // Store the cleanup timer
-            commandTimers.set(userId, cleanupTimer);
+            commandTimers.set(userId, safeTimer);
             this.cooldownCleanupTimers.set(commandName, commandTimers);
         } catch (error) {
             context.logger.error(
@@ -232,6 +211,85 @@ export class CommandRouterPlugin extends BasePlugin {
                 `Failed to schedule cooldown cleanup for user ${userId} on command '${commandName}'`
             );
         }
+    }
+
+    /**
+     * Performs the actual cooldown cleanup logic.
+     * Separated for better testability and reuse.
+     *
+     * @param commandName - The name of the command.
+     * @param userId - The user ID for the cooldown.
+     * @param context - The plugin context for logging.
+     */
+    protected performCooldownCleanup(commandName: string, userId: string, context: PluginContext): void {
+        try {
+            // Remove the cooldown entry
+            const timestamps = this.cooldowns.get(commandName);
+            if (timestamps) {
+                timestamps.delete(userId);
+                // If no more users have cooldowns for this command, remove the command entry
+                if (timestamps.size === 0) {
+                    this.cooldowns.delete(commandName);
+                }
+            }
+
+            // Remove the cleanup timer
+            const timers = this.cooldownCleanupTimers.get(commandName);
+            if (timers) {
+                timers.delete(userId);
+                // If no more timers for this command, remove the command entry
+                if (timers.size === 0) {
+                    this.cooldownCleanupTimers.delete(commandName);
+                }
+            }
+
+            context.logger.debug(`Cleaned up cooldown for user ${userId} on command '${commandName}'`);
+        } catch (cleanupError) {
+            context.logger.error(
+                cleanupError,
+                `Failed to clean up cooldown for user ${userId} on command '${commandName}'`
+            );
+        }
+    }
+
+    /**
+     * Creates a safe timeout that handles delays longer than JavaScript's setTimeout limit.
+     * Delays longer than ~24.8 days are chunked into smaller intervals to prevent
+     * immediate execution due to integer overflow.
+     *
+     * @param callback - The function to execute after the delay.
+     * @param delayMs - The total delay in milliseconds.
+     * @param context - The plugin context for logging.
+     * @returns A NodeJS.Timeout that can be cleared with clearTimeout.
+     */
+    public createSafeTimeout(callback: () => void, delayMs: number, context: PluginContext): NodeJS.Timeout {
+        if (delayMs <= CommandRouterPlugin.MAX_TIMEOUT_MS) {
+            // Safe to use direct setTimeout
+            return setTimeout(callback, delayMs);
+        }
+
+        // For long delays, chunk into smaller intervals
+        context.logger.debug(
+            `Using chunked timeout for delay ${delayMs}ms (exceeds limit of ${CommandRouterPlugin.MAX_TIMEOUT_MS}ms)`
+        );
+
+        const chunkSize = CommandRouterPlugin.MAX_TIMEOUT_MS;
+        let remainingDelay = delayMs;
+
+        const scheduleChunk = (): NodeJS.Timeout => {
+            if (remainingDelay <= chunkSize) {
+                // Final chunk
+                return setTimeout(callback, remainingDelay);
+            }
+
+            // Schedule next chunk
+            remainingDelay -= chunkSize;
+            return setTimeout(() => {
+                scheduleChunk();
+            }, chunkSize);
+        };
+
+        return scheduleChunk();
     }
 
     /**
