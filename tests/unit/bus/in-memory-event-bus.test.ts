@@ -1,6 +1,6 @@
 import { describe, expect, it, mock } from 'bun:test';
-import { InMemoryEventBus } from '@app/bus/in-memory-event-bus.ts';
-import type { MemberJoinEvent, MessageCreateEvent } from '../../../src/types/index.ts';
+import { InMemoryEventBus } from '@app/bus/in-memory-event-bus';
+import type { MemberJoinEvent, MessageCreateEvent } from '@app/types/index';
 
 describe('InMemoryEventBus', () => {
     it('correctly dispatches events to subscribers', () => {

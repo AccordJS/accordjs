@@ -1,5 +1,5 @@
 import type { EventMap } from '@app/types';
-import { createLogger } from '@app/utils/createLogger';
+import { createLogger } from '@app/utils/create-logger';
 import type { AnyEventHandler, EventBus, EventHandler } from './types';
 
 /**

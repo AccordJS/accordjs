@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { BotEventSchema, MemberJoinEventSchema, MessageCreateEventSchema } from '../../src/types/index.ts';
+import { BotEventSchema, MemberJoinEventSchema, MessageCreateEventSchema } from '@app/types/index';
 
 describe('Foundational Zod Schemas', () => {
     describe('MessageCreateEventSchema', () => {

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
-import { ConfigSchema, createConfig, LogLevelEnumSchema, NodeEnvEnumSchema } from '../../src/config.ts';
+import { ConfigSchema, createConfig, LogLevelEnumSchema, NodeEnvEnumSchema } from '@app/config';
 
 describe('Configuration Schema Validation', () => {
     let originalEnv: Record<string, string | undefined>;
