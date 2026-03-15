@@ -2,10 +2,60 @@
  * AccordJS - A clean, extensible Discord bot framework in TypeScript
  */
 
-import { createLogger } from './utils/createLogger.ts';
+import { createDiscordClient } from '@app/bot/client';
+import { GatewayAdapter } from '@app/bot/gateway';
+import { InMemoryEventBus } from '@app/bus';
+import { createConfig } from '@app/config';
+import { createLogger } from '@app/utils/create-logger';
 
 const logger = createLogger('AccordJS');
 
-logger.info('Initializing AccordJS framework...');
+try {
+    logger.info('Initializing AccordJS framework...');
 
+    // 1. Load and validate configuration
+    const config = createConfig();
+    logger.info('Configuration loaded successfully.');
+
+    // 2. Initialize Event Bus
+    const eventBus = new InMemoryEventBus();
+    logger.info('Event bus initialized.');
+
+    // 3. Initialize Discord Client
+    const client = createDiscordClient();
+    logger.info('Discord client created.');
+
+    // 4. Initialize Gateway Adapter
+    const gateway = new GatewayAdapter(client, eventBus);
+    gateway.registerListeners();
+    logger.info('Gateway listeners registered.');
+
+    // 5. Example subscription (for demonstration)
+    eventBus.subscribe('MESSAGE_CREATE', (event) => {
+        logger.debug(
+            { eventId: event.messageId, userId: event.userId },
+            `Message from ${event.authorName}: ${event.content}`
+        );
+    });
+
+    // 6. Login to Discord
+    if (config.env !== 'test') {
+        client
+            .login(config.discord.token)
+            .then(() => {
+                logger.info('Successfully logged into Discord.');
+            })
+            .catch((error) => {
+                logger.fatal(error, 'Failed to login to Discord');
+                process.exit(1);
+            });
+    }
+} catch (error) {
+    logger.fatal(error, 'Failed to initialize AccordJS framework');
+    process.exit(1);
+}
+
+export * from './bus/index.ts';
+export * from './config.ts';
+// Core framework exports
 export * from './types/index.ts';
