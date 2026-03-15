@@ -40,7 +40,7 @@ try {
     eventBus.subscribe('MESSAGE_CREATE', (event) => {
         logger.debug(
             { messageId: event.messageId, userId: event.userId },
-            `Message from ${event.authorName}: ${event.content}`
+            `Message from ${event.authorName}: [CONTENT_REDACTED]`
         );
     });
 

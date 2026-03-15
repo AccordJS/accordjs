@@ -71,6 +71,6 @@ describe('PluginManager', () => {
             },
         };
 
-        expect(manager.register(failingPlugin)).rejects.toThrow('Registration failed');
+        await expect(manager.register(failingPlugin)).rejects.toThrow('Registration failed');
     });
 });

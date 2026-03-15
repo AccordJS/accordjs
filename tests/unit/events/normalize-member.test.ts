@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { normalizeMember } from '@app/events/normalize-member';
 import type { Guild, GuildMember, User } from 'discord.js';
+import { ZodError } from 'zod';
 
 describe('Member Join Normalization', () => {
     it('should correctly normalize a member join event', () => {
@@ -77,12 +78,6 @@ describe('Member Join Normalization', () => {
             joinedTimestamp: null,
         } as unknown as GuildMember;
 
-        expect(() => normalizeMember(mockMember)).toThrow();
-        // The error should be a Zod validation error due to invalid serverId type
-        try {
-            normalizeMember(mockMember);
-        } catch (error) {
-            expect((error as Error).constructor.name).toBe('ZodError');
-        }
+        expect(() => normalizeMember(mockMember)).toThrow(ZodError);
     });
 });
