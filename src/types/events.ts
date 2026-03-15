@@ -80,3 +80,10 @@ export const EventMapSchemas = {
     MESSAGE_CREATE: MessageCreateEventSchema,
     MEMBER_JOIN: MemberJoinEventSchema,
 } as const;
+
+/**
+ * Map of event names to their respective event types
+ */
+export type EventMap = {
+    [K in keyof typeof EventMapSchemas]: z.infer<(typeof EventMapSchemas)[K]>;
+};

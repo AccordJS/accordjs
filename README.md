@@ -88,10 +88,11 @@ src/
 │   ├── gateway.ts         # Gateway adapter for event normalization
 │   └── intents.ts         # Discord intents configuration
 ├── bus/                   # Event distribution system
-│   └── eventBus.ts       # Typed event bus implementation
+│   ├── in-memory-event-bus.ts # In-memory event bus implementation
+│   └── types.ts           # Event bus interfaces and types
 ├── events/                # Event normalization logic
-│   ├── normalizeMessage.ts
-│   ├── normalizeMember.ts
+│   ├── normalize-message.ts
+│   ├── normalize-member.ts
 │   └── types.ts          # Event type definitions
 ├── plugins/               # Plugin implementations
 │   ├── commands/         # Command handling plugin
@@ -102,7 +103,7 @@ src/
 │   ├── events.ts         # Event schemas (Zod) and types
 │   └── plugin.ts         # Plugin interface definitions
 ├── utils/                # Utility functions
-│   └── createLogger.ts   # Pino logger factory
+│   └── create-logger.ts  # Pino logger factory
 └── index.ts              # Main entry point
 ```
 

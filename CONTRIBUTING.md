@@ -54,6 +54,30 @@ bun test
 bun run lint:fix
 ```
 
+## Coding Standards
+
+### File Naming Convention
+
+AccordJS uses **kebab-case for all file names** to ensure consistency and cross-platform compatibility:
+
+```bash
+# ✅ Correct file naming
+src/bus/in-memory-event-bus.ts # Contains InMemoryEventBus class
+src/utils/create-logger.ts  # Contains createLogger function
+src/bot/discord-client.ts   # Contains DiscordClient class
+
+# ❌ Incorrect file naming
+src/bus/eventBus.ts         # camelCase
+src/utils/createLogger.ts   # camelCase
+src/bot/DiscordClient.ts    # PascalCase
+```
+
+**Content naming inside files:**
+- **Classes, Interfaces, Types**: `PascalCase` (InMemoryEventBus, EventBus, EventMap)
+- **Functions, Variables**: `camelCase` (createLogger, defineConfig)
+- **Constants**: `UPPER_CASE` (MAX_RETRIES, DEFAULT_CONFIG)
+- **Zod Schemas**: `PascalCase + Schema` suffix (ConfigSchema, EventTypeSchema)
+
 ### Git Hooks
 
 This project uses Lefthook to automatically run quality checks:
@@ -146,7 +170,7 @@ src/
 │   ├── gateway.ts         # Event normalization
 │   └── intents.ts         # Discord intents
 ├── bus/                   # Event distribution
-│   └── eventBus.ts       # Typed event bus
+│   └── event-bus.ts       # Typed event bus
 ├── events/                # Event types and normalization
 │   ├── normalizeMessage.ts
 │   ├── normalizeMember.ts
