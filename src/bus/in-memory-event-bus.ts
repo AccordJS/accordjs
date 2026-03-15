@@ -1,4 +1,5 @@
 import type { EventMap } from '@app/types';
+import { createLogger } from '@app/utils/createLogger';
 import type { AnyEventHandler, EventBus, EventHandler } from './types';
 
 /**
@@ -13,6 +14,11 @@ export class InMemoryEventBus implements EventBus {
     protected handlers = new Map<keyof EventMap, Set<AnyEventHandler>>();
 
     /**
+     * Logger instance for structured error logging
+     */
+    protected logger = createLogger('InMemoryEventBus');
+
+    /**
      * @inheritdoc
      */
     public publish<K extends keyof EventMap>(type: K, event: EventMap[K]): void {
@@ -21,17 +27,21 @@ export class InMemoryEventBus implements EventBus {
             return;
         }
 
-        for (const handler of typeHandlers) {
+        // Snapshot the handlers to prevent mutation during iteration
+        // This prevents issues if handlers call subscribe/unsubscribe during dispatch
+        const handlerSnapshot = Array.from(typeHandlers);
+
+        for (const handler of handlerSnapshot) {
             try {
                 // Ensure handler is called with await for potential async operations
                 const result = handler(event);
                 if (result instanceof Promise) {
                     result.catch((error) => {
-                        console.error(`Error in async handler for event ${type}:`, error);
+                        this.logger.error(error, `Error in async handler for event ${type}`);
                     });
                 }
             } catch (error) {
-                console.error(`Error in handler for event ${type}:`, error);
+                this.logger.error(error, `Error in handler for event ${type}`);
             }
         }
     }

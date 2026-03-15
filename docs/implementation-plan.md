@@ -8,7 +8,7 @@ AccordJS follows **kebab-case for all file names** regardless of content:
 - ✅ `in-memory-event-bus.ts` (contains InMemoryEventBus class)
 - ✅ `discord-client.ts` (contains DiscordClient class)
 - ✅ `create-logger.ts` (contains createLogger function)
-- ❌ `event-bus.ts`, `EventBus.ts`, `createLogger.ts`
+- ❌ `eventBus.ts`, `EventBus.ts`, `createLogger.ts`
 
 Content inside files uses appropriate casing: Classes/Interfaces/Types use `PascalCase`, functions/variables use `camelCase`, constants use `UPPER_CASE`.
 

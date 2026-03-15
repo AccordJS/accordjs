@@ -81,24 +81,32 @@ describe('InMemoryEventBus', () => {
             throw error;
         });
 
-        // Mock console.error to avoid noise in tests
+        // Save original console.error to restore later
+        const originalConsoleError = globalThis.console.error;
         const consoleSpy = mock((_msg: string, _err: Error) => {});
-        globalThis.console.error = consoleSpy as typeof console.error;
 
-        const event: MemberJoinEvent = {
-            type: 'MEMBER_JOIN',
-            timestamp: Date.now(),
-            userId: '123',
-            serverId: '456',
-            username: 'User',
-            joinedAt: Date.now(),
-        };
+        try {
+            // Mock console.error to avoid noise in tests
+            globalThis.console.error = consoleSpy as typeof console.error;
 
-        bus.subscribe('MEMBER_JOIN', handler);
-        bus.publish('MEMBER_JOIN', event);
+            const event: MemberJoinEvent = {
+                type: 'MEMBER_JOIN',
+                timestamp: Date.now(),
+                userId: '123',
+                serverId: '456',
+                username: 'User',
+                joinedAt: Date.now(),
+            };
 
-        expect(handler).toHaveBeenCalledTimes(1);
-        // Note: console.error will be called asynchronously, so we might not see it immediately in a synchronous check
+            bus.subscribe('MEMBER_JOIN', handler);
+            bus.publish('MEMBER_JOIN', event);
+
+            expect(handler).toHaveBeenCalledTimes(1);
+            // Note: console.error will be called asynchronously, so we might not see it immediately in a synchronous check
+        } finally {
+            // Always restore the original console.error to prevent test pollution
+            globalThis.console.error = originalConsoleError;
+        }
     });
 
     it('isolates different event types', () => {

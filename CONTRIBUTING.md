@@ -67,7 +67,7 @@ src/utils/create-logger.ts  # Contains createLogger function
 src/bot/discord-client.ts   # Contains DiscordClient class
 
 # ❌ Incorrect file naming
-src/bus/event-bus.ts         # Mixed camelCase
+src/bus/eventBus.ts         # camelCase
 src/utils/createLogger.ts   # camelCase
 src/bot/DiscordClient.ts    # PascalCase
 ```
