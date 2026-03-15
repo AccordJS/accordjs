@@ -2,6 +2,16 @@
 
 Based on the Discord Bot Framework Architecture, here's a phase-by-phase implementation plan for you to follow. Discord.js v14.25.1 (latest stable) will be used.
 
+## File Naming Convention
+
+AccordJS follows **kebab-case for all file names** regardless of content:
+- ✅ `in-memory-event-bus.ts` (contains InMemoryEventBus class)
+- ✅ `discord-client.ts` (contains DiscordClient class)
+- ✅ `create-logger.ts` (contains createLogger function)
+- ❌ `event-bus.ts`, `EventBus.ts`, `createLogger.ts`
+
+Content inside files uses appropriate casing: Classes/Interfaces/Types use `PascalCase`, functions/variables use `camelCase`, constants use `UPPER_CASE`.
+
 ## Phase 1: Project Foundation & Dependencies
 **Goal:** Set up core dependencies, basic TypeScript configuration, and foundational Zod schemas
 
@@ -57,14 +67,14 @@ Based on the Discord Bot Framework Architecture, here's a phase-by-phase impleme
 **Goal:** Implement the core event distribution system with full type safety
 
 **Files to Create:**
-- `src/bus/eventBus.ts` - Main event bus implementation
+- `src/bus/in-memory-event-bus.ts` - In-memory event bus implementation
 - `src/bus/types.ts` - Event bus specific types
 
 **Files to Modify:**
 - `src/types/events.ts` - Add event map schemas and inferred types
 
 **Tests to Create:**
-- `tests/unit/bus/eventBus.test.ts` - Event bus functionality tests
+- `tests/unit/bus/in-memory-event-bus.test.ts` - In-memory event bus functionality tests
 
 **Commit Message:** `feat: implement typed event bus system`
 
@@ -77,14 +87,14 @@ Based on the Discord Bot Framework Architecture, here's a phase-by-phase impleme
 - `src/bot/client.ts` - Discord client initialization
 - `src/bot/intents.ts` - Discord intents configuration
 - `src/bot/gateway.ts` - Gateway adapter for event normalization using Zod validation
-- `src/events/normalizeMessage.ts` - Message event normalization with schema validation
-- `src/events/normalizeMember.ts` - Member event normalization with schema validation
+- `src/events/normalize-message.ts` - Message event normalization with schema validation
+- `src/events/normalize-member.ts` - Member event normalization with schema validation
 - `src/events/types.ts` - Additional normalized event schemas (if needed)
 
 **Tests to Create:**
 - `tests/unit/bot/client.test.ts` - Client initialization tests
-- `tests/unit/events/normalizeMessage.test.ts` - Message normalization and schema validation tests
-- `tests/unit/events/normalizeMember.test.ts` - Member normalization and schema validation tests
+- `tests/unit/events/normalize-message.test.ts` - Message normalization and schema validation tests
+- `tests/unit/events/normalize-member.test.ts` - Member normalization and schema validation tests
 
 **Commit Message:** `feat: add Discord gateway integration and event normalization`
 
@@ -94,16 +104,16 @@ Based on the Discord Bot Framework Architecture, here's a phase-by-phase impleme
 **Goal:** Core plugin system allowing registration and lifecycle management
 
 **Files to Create:**
-- `src/plugins/pluginManager.ts` - Plugin registration and management
-- `src/plugins/basePlugin.ts` - Base plugin abstract class
-- `src/types/pluginContext.ts` - Plugin context definitions
+- `src/plugins/plugin-manager.ts` - Plugin registration and management
+- `src/plugins/base-plugin.ts` - Base plugin abstract class
+- `src/types/plugin-context.ts` - Plugin context definitions
 
 **Files to Modify:**
 - `src/index.ts` - Integrate plugin manager
 
 **Tests to Create:**
-- `tests/unit/plugins/pluginManager.test.ts` - Plugin management tests
-- `tests/unit/plugins/basePlugin.test.ts` - Base plugin tests
+- `tests/unit/plugins/plugin-manager.test.ts` - Plugin management tests
+- `tests/unit/plugins/base-plugin.test.ts` - Base plugin tests
 
 **Commit Message:** `feat: implement plugin architecture foundation`
 
@@ -113,8 +123,8 @@ Based on the Discord Bot Framework Architecture, here's a phase-by-phase impleme
 **Goal:** Centralized command handling with parsing, permissions, and cooldowns
 
 **Files to Create:**
-- `src/plugins/commands/commandRouter.ts` - Main command routing logic
-- `src/plugins/commands/commandRegistry.ts` - Command registration system
+- `src/plugins/commands/command-router.ts` - Main command routing logic
+- `src/plugins/commands/command-registry.ts` - Command registration system
 - `src/plugins/commands/types.ts` - Command-specific types
 - `src/plugins/commands/parser.ts` - Command argument parsing
 - `src/plugins/commands/index.ts` - Command plugin main export
@@ -123,9 +133,9 @@ Based on the Discord Bot Framework Architecture, here's a phase-by-phase impleme
 - `src/types/events.ts` - Add command-related events
 
 **Tests to Create:**
-- `tests/unit/plugins/commands/commandRouter.test.ts`
+- `tests/unit/plugins/commands/command-router.test.ts`
 - `tests/unit/plugins/commands/parser.test.ts`
-- `tests/unit/plugins/commands/commandRegistry.test.ts`
+- `tests/unit/plugins/commands/command-registry.test.ts`
 
 **Commit Message:** `feat: add command router plugin with parsing and registration`
 
@@ -136,12 +146,12 @@ Based on the Discord Bot Framework Architecture, here's a phase-by-phase impleme
 
 **Files to Create:**
 - `src/plugins/logging/logger.ts` - Pino logger setup
-- `src/plugins/logging/eventLogger.ts` - Event-specific logging
+- `src/plugins/logging/event-logger.ts` - Event-specific logging
 - `src/plugins/logging/index.ts` - Logging plugin main export
 - `src/plugins/logging/types.ts` - Logging configuration types
 
 **Tests to Create:**
-- `tests/unit/plugins/logging/eventLogger.test.ts`
+- `tests/unit/plugins/logging/event-logger.test.ts`
 - `tests/unit/plugins/logging/logger.test.ts`
 
 **Commit Message:** `feat: add logging plugin with structured event logging`
@@ -170,14 +180,14 @@ Based on the Discord Bot Framework Architecture, here's a phase-by-phase impleme
 **Goal:** Event analytics, metrics collection, and basic analytics processing
 
 **Files to Create:**
-- `src/plugins/analytics/metricsCollector.ts` - Metrics collection logic
-- `src/plugins/analytics/eventAnalyzer.ts` - Event analysis functionality
+- `src/plugins/analytics/metrics-collector.ts` - Metrics collection logic
+- `src/plugins/analytics/event-analyzer.ts` - Event analysis functionality
 - `src/plugins/analytics/types.ts` - Analytics types
 - `src/plugins/analytics/index.ts` - Analytics plugin export
 
 **Tests to Create:**
-- `tests/unit/plugins/analytics/metricsCollector.test.ts`
-- `tests/unit/plugins/analytics/eventAnalyzer.test.ts`
+- `tests/unit/plugins/analytics/metrics-collector.test.ts`
+- `tests/unit/plugins/analytics/event-analyzer.test.ts`
 
 **Commit Message:** `feat: add analytics plugin for event metrics and analysis`
 
