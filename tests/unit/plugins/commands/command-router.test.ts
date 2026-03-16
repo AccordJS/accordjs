@@ -390,35 +390,40 @@ describe('CommandRouterPlugin', () => {
 
         await router.register(context);
 
-        // First execution should succeed
-        await context.eventBus.publish('MESSAGE_CREATE', {
-            type: 'MESSAGE_CREATE',
-            timestamp: Date.now(),
-            userId: 'u1',
-            channelId: 'c1',
-            messageId: 'm1',
-            content: '!maxcd',
-            authorName: 'U',
-            authorTag: 'U#1',
-            isBot: false,
-        });
+        try {
+            // First execution should succeed
+            await context.eventBus.publish('MESSAGE_CREATE', {
+                type: 'MESSAGE_CREATE',
+                timestamp: Date.now(),
+                userId: 'u1',
+                channelId: 'c1',
+                messageId: 'm1',
+                content: '!maxcd',
+                authorName: 'U',
+                authorTag: 'U#1',
+                isBot: false,
+            });
 
-        expect(executeMock).toHaveBeenCalledTimes(1);
+            expect(executeMock).toHaveBeenCalledTimes(1);
 
-        // Second execution should be blocked by cooldown
-        await context.eventBus.publish('MESSAGE_CREATE', {
-            type: 'MESSAGE_CREATE',
-            timestamp: Date.now(),
-            userId: 'u1',
-            channelId: 'c1',
-            messageId: 'm2',
-            content: '!maxcd',
-            authorName: 'U',
-            authorTag: 'U#1',
-            isBot: false,
-        });
+            // Second execution should be blocked by cooldown
+            await context.eventBus.publish('MESSAGE_CREATE', {
+                type: 'MESSAGE_CREATE',
+                timestamp: Date.now(),
+                userId: 'u1',
+                channelId: 'c1',
+                messageId: 'm2',
+                content: '!maxcd',
+                authorName: 'U',
+                authorTag: 'U#1',
+                isBot: false,
+            });
 
-        expect(executeMock).toHaveBeenCalledTimes(1); // Still blocked
+            expect(executeMock).toHaveBeenCalledTimes(1); // Still blocked
+        } finally {
+            // Clean up long-lived timers to prevent test destabilization
+            router.cleanup();
+        }
     });
 
     it('should handle cooldowns longer than setTimeout limit using chunked timeouts', async () => {
@@ -438,35 +443,40 @@ describe('CommandRouterPlugin', () => {
 
         await router.register(context);
 
-        // First execution should succeed
-        await context.eventBus.publish('MESSAGE_CREATE', {
-            type: 'MESSAGE_CREATE',
-            timestamp: Date.now(),
-            userId: 'u1',
-            channelId: 'c1',
-            messageId: 'm1',
-            content: '!longcd',
-            authorName: 'U',
-            authorTag: 'U#1',
-            isBot: false,
-        });
+        try {
+            // First execution should succeed
+            await context.eventBus.publish('MESSAGE_CREATE', {
+                type: 'MESSAGE_CREATE',
+                timestamp: Date.now(),
+                userId: 'u1',
+                channelId: 'c1',
+                messageId: 'm1',
+                content: '!longcd',
+                authorName: 'U',
+                authorTag: 'U#1',
+                isBot: false,
+            });
 
-        expect(executeMock).toHaveBeenCalledTimes(1);
+            expect(executeMock).toHaveBeenCalledTimes(1);
 
-        // Second execution should be blocked by cooldown (long cooldown still active)
-        await context.eventBus.publish('MESSAGE_CREATE', {
-            type: 'MESSAGE_CREATE',
-            timestamp: Date.now(),
-            userId: 'u1',
-            channelId: 'c1',
-            messageId: 'm2',
-            content: '!longcd',
-            authorName: 'U',
-            authorTag: 'U#1',
-            isBot: false,
-        });
+            // Second execution should be blocked by cooldown (long cooldown still active)
+            await context.eventBus.publish('MESSAGE_CREATE', {
+                type: 'MESSAGE_CREATE',
+                timestamp: Date.now(),
+                userId: 'u1',
+                channelId: 'c1',
+                messageId: 'm2',
+                content: '!longcd',
+                authorName: 'U',
+                authorTag: 'U#1',
+                isBot: false,
+            });
 
-        expect(executeMock).toHaveBeenCalledTimes(1); // Still blocked by long cooldown
+            expect(executeMock).toHaveBeenCalledTimes(1); // Still blocked by long cooldown
+        } finally {
+            // Clean up long-lived timers to prevent test destabilization
+            router.cleanup();
+        }
     });
 
     it('should use direct setTimeout for cooldowns under the limit', async () => {

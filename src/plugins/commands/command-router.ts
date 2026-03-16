@@ -5,6 +5,15 @@ import { CommandParser } from './parser';
 import type { Command, CommandContext, CommandRegistry } from './types';
 
 /**
+ * Interface for chunked timeouts that support proper cancellation
+ */
+interface ChunkedTimeout {
+    readonly timerId: NodeJS.Timeout;
+    readonly cancelled: boolean;
+    cancel(): void;
+}
+
+/**
  * Main command router plugin for AccordJS.
  *
  * Listens for normalized message creation events, parses them for commands,
@@ -15,7 +24,7 @@ export class CommandRouterPlugin extends BasePlugin {
     protected registry: CommandRegistry;
     protected parser: CommandParser;
     protected cooldowns = new Map<string, Map<string, number>>();
-    protected cooldownCleanupTimers = new Map<string, Map<string, NodeJS.Timeout>>();
+    protected cooldownCleanupTimers = new Map<string, Map<string, NodeJS.Timeout | ChunkedTimeout>>();
 
     // Maximum safe timeout value for setTimeout (2^31 - 1 milliseconds ≈ 24.8 days)
     private static readonly MAX_TIMEOUT_MS = 2_147_483_647;
@@ -189,10 +198,16 @@ export class CommandRouterPlugin extends BasePlugin {
     ): void {
         try {
             // Clear any existing cleanup timer for this command/user combination
-            const commandTimers = this.cooldownCleanupTimers.get(commandName) ?? new Map<string, NodeJS.Timeout>();
+            const commandTimers =
+                this.cooldownCleanupTimers.get(commandName) ?? new Map<string, NodeJS.Timeout | ChunkedTimeout>();
             const existingTimer = commandTimers.get(userId);
             if (existingTimer) {
-                clearTimeout(existingTimer);
+                // Handle both NodeJS.Timeout and ChunkedTimeout
+                if ('cancel' in existingTimer) {
+                    existingTimer.cancel();
+                } else {
+                    clearTimeout(existingTimer);
+                }
             }
 
             // Use safe timeout to handle cooldowns longer than JavaScript's setTimeout limit
@@ -260,36 +275,71 @@ export class CommandRouterPlugin extends BasePlugin {
      * @param callback - The function to execute after the delay.
      * @param delayMs - The total delay in milliseconds.
      * @param context - The plugin context for logging.
-     * @returns A NodeJS.Timeout that can be cleared with clearTimeout.
+     * @returns A timeout handle that can be cancelled properly.
      */
-    public createSafeTimeout(callback: () => void, delayMs: number, context: PluginContext): NodeJS.Timeout {
+    public createSafeTimeout(
+        callback: () => void,
+        delayMs: number,
+        context: PluginContext
+    ): NodeJS.Timeout | ChunkedTimeout {
         if (delayMs <= CommandRouterPlugin.MAX_TIMEOUT_MS) {
             // Safe to use direct setTimeout
             return setTimeout(callback, delayMs);
         }
 
-        // For long delays, chunk into smaller intervals
+        // For long delays, chunk into smaller intervals with proper cancellation support
         context.logger.debug(
             `Using chunked timeout for delay ${delayMs}ms (exceeds limit of ${CommandRouterPlugin.MAX_TIMEOUT_MS}ms)`
         );
 
         const chunkSize = CommandRouterPlugin.MAX_TIMEOUT_MS;
         let remainingDelay = delayMs;
+        let currentTimerId: NodeJS.Timeout | null = null;
+        let isCancelled = false;
 
-        const scheduleChunk = (): NodeJS.Timeout => {
+        const timeoutRef: ChunkedTimeout = {
+            get timerId() {
+                if (!currentTimerId) {
+                    throw new Error('Timer ID not available');
+                }
+                return currentTimerId;
+            },
+            get cancelled() {
+                return isCancelled;
+            },
+            cancel() {
+                isCancelled = true;
+                if (currentTimerId) {
+                    clearTimeout(currentTimerId);
+                    currentTimerId = null;
+                }
+            },
+        };
+
+        const scheduleChunk = (): void => {
+            if (isCancelled) return;
+
             if (remainingDelay <= chunkSize) {
                 // Final chunk
-                return setTimeout(callback, remainingDelay);
+                currentTimerId = setTimeout(() => {
+                    if (!isCancelled) {
+                        callback();
+                    }
+                }, remainingDelay);
+                return;
             }
 
             // Schedule next chunk
             remainingDelay -= chunkSize;
-            return setTimeout(() => {
-                scheduleChunk();
+            currentTimerId = setTimeout(() => {
+                if (!isCancelled) {
+                    scheduleChunk();
+                }
             }, chunkSize);
         };
 
-        return scheduleChunk();
+        scheduleChunk();
+        return timeoutRef;
     }
 
     /**
@@ -297,5 +347,28 @@ export class CommandRouterPlugin extends BasePlugin {
      */
     public registerCommand(command: Command): void {
         this.registry.register(command);
+    }
+
+    /**
+     * Cleans up all active cooldown timers and cooldown entries.
+     * This method should be called during test teardown or plugin shutdown
+     * to prevent memory leaks and long-running timer handles.
+     */
+    public cleanup(): void {
+        // Clear all cooldown cleanup timers
+        for (const commandTimers of this.cooldownCleanupTimers.values()) {
+            for (const timer of commandTimers.values()) {
+                // Handle both NodeJS.Timeout and ChunkedTimeout
+                if ('cancel' in timer) {
+                    timer.cancel();
+                } else {
+                    clearTimeout(timer);
+                }
+            }
+        }
+
+        // Clear all data structures
+        this.cooldownCleanupTimers.clear();
+        this.cooldowns.clear();
     }
 }
