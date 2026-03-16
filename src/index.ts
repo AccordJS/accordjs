@@ -18,6 +18,7 @@ export * from '@app/events/normalize-member';
 export * from '@app/events/normalize-message';
 // Plugin System
 export * from '@app/plugins/base-plugin';
+export * from '@app/plugins/commands/index';
 export * from '@app/plugins/plugin-manager';
 // Core Framework Types
 export * from '@app/types/index';

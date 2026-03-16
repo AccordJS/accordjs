@@ -13,7 +13,7 @@
 - 🤖 **Event-Driven Architecture**: Discord gateway isolation with normalized event processing
 - 🔌 **Plugin System**: Extensible plugin architecture for modular feature development
 - 📡 **Typed Event Bus**: Fully typed event distribution system with compile-time safety
-- ⚡ **Command Router**: Centralized command handling with permission checks and cooldowns
+- ⚡ **Command Router**: Centralized command handling with permission checks and safe cooldowns (supports any duration)
 - 🛡️ **Type Safety**: Zero `any` usage with strict TypeScript configuration and Zod runtime validation
 - 📊 **Analytics Ready**: Built-in support for event logging and analytics processing
 
@@ -209,6 +209,15 @@ AccordJS enforces strict type safety with:
 - Discriminated union event types
 - Typed plugin interfaces
 - Compile-time event handler validation
+
+### Command System
+AccordJS includes a robust command router with advanced features:
+
+- **Safe Cooldowns**: Handles cooldowns of any duration (milliseconds to years) by automatically chunking long delays to work around JavaScript's setTimeout limitations
+- **Permission System**: Fail-closed security model that denies access to commands with undefined permissions
+- **Conflict Detection**: Prevents registration of commands with conflicting names or aliases
+- **Memory Management**: Automatic cleanup of expired cooldowns to prevent memory leaks
+- **Audit Logging**: Comprehensive logging of command execution, errors, and permission denials
 
 ### Plugin Development
 Plugins subscribe to normalized events and operate independently:
