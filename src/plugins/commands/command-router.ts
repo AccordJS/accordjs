@@ -8,7 +8,6 @@ import type { Command, CommandContext, CommandRegistry } from './types';
  * Interface for chunked timeouts that support proper cancellation
  */
 interface ChunkedTimeout {
-    readonly timerId: NodeJS.Timeout;
     readonly cancelled: boolean;
     cancel(): void;
 }
@@ -298,12 +297,6 @@ export class CommandRouterPlugin extends BasePlugin {
         let isCancelled = false;
 
         const timeoutRef: ChunkedTimeout = {
-            get timerId() {
-                if (!currentTimerId) {
-                    throw new Error('Timer ID not available');
-                }
-                return currentTimerId;
-            },
             get cancelled() {
                 return isCancelled;
             },
