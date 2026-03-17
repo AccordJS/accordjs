@@ -61,7 +61,7 @@ const traceExecution = <TResult>(
 
     const finalize = (error?: unknown) => {
         entry.durationMs = getTime() - startedAt;
-        if (error) {
+        if (typeof error !== 'undefined') {
             entry.error = error;
         }
     };
