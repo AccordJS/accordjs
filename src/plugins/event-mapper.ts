@@ -1,7 +1,7 @@
 import type { EventBus } from '@app/bus/types';
-import { runMiddlewareChain } from '@app/middleware/middleware-runner';
 import type { EventMiddleware, MiddlewareLogger } from '@app/middleware/types';
-import type { EventHandlerMap, EventMap } from '@app/types';
+import { attachPipelineMetadata } from '@app/pipeline/event-pipeline';
+import type { EventHandlerMap } from '@app/types';
 import { HandlerRegistry } from './handler-registry';
 
 interface LoggerLike extends MiddlewareLogger {
@@ -27,26 +27,21 @@ export const registerMappedHandlers = (
     });
 
     const handlers = registry.resolve(eventMap);
+    const pluginName =
+        typeof (plugin as { name?: unknown }).name === 'string' ? (plugin as { name: string }).name : undefined;
 
     for (const mapped of handlers) {
         const { eventType, handler } = mapped;
 
-        const wrappedHandler = (event: EventMap[typeof eventType]): void | Promise<void> => {
-            const middleware = options.getMiddleware?.() ?? options.middleware ?? [];
-            if (middleware.length === 0) {
-                return handler(event);
-            }
+        const shouldAttachMetadata =
+            Boolean(pluginName) || Boolean(options.getMiddleware) || Boolean(options.middleware?.length);
 
-            return runMiddlewareChain(
-                event,
-                middleware as EventMiddleware<EventMap[typeof eventType]>[],
-                handler,
-                options.logger
-            );
-        };
-
-        if (options.getMiddleware || (options.middleware && options.middleware.length > 0)) {
-            eventBus.subscribe(eventType, wrappedHandler);
+        if (shouldAttachMetadata) {
+            const pipelineHandler = attachPipelineMetadata(handler, {
+                getPluginMiddleware: options.getMiddleware ?? (() => options.middleware ?? []),
+                pluginName,
+            });
+            eventBus.subscribe(eventType, pipelineHandler);
             continue;
         }
 
