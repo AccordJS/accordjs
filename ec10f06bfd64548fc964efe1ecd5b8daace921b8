@@ -1,0 +1,23 @@
+docs/plugin-development.md
+  4e5987c5086ed533 338,348,350,355,474-476,499,503-504,507-510,522,541,550
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.12",
+  "base_commit_sha": "ec10f06bfd64548fc964efe1ecd5b8daace921b8",
+  "prompts": {
+    "4e5987c5086ed533": {
+      "agent_id": {
+        "tool": "gemini",
+        "id": "220d7206-47d2-4da3-ba25-2d1404f334c5",
+        "model": "gemini-3-flash-preview"
+      },
+      "human_author": "Angel S. Moreno <angelxmoreno@gmail.com>",
+      "messages": [],
+      "total_additions": 21,
+      "total_deletions": 13,
+      "accepted_lines": 17,
+      "overriden_lines": 0
+    }
+  }
+}
