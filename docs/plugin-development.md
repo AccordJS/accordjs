@@ -37,6 +37,10 @@ Discord Gateway → Event Normalization → Global Middleware → Plugin Event M
 5. **Plugin Middleware**: Plugin-specific middleware classes
 6. **Plugin Handlers**: Your business logic methods
 
+**Ordering Notes**
+- Global middleware always runs before plugin middleware.
+- Middleware priority is applied within each group (global or plugin), not across groups.
+
 ## Getting Started
 
 ### Prerequisites
@@ -88,7 +92,7 @@ The `BasePlugin` provides sensible defaults:
 
 ```typescript
 // Default mapping in BasePlugin
-protected readonly eventMap: Record<string, EventType> = {
+protected readonly eventMap: EventHandlerMap = {
     'onMessageCreate': 'MESSAGE_CREATE',
     'onMemberJoin': 'MEMBER_JOIN',
     'onMemberLeave': 'MEMBER_LEAVE',
@@ -112,7 +116,7 @@ class ModerationPlugin extends BasePlugin {
         'checkForSpam': 'MESSAGE_CREATE',      // Multiple handlers allowed
         'handleUserLeave': 'MEMBER_LEAVE',
         'welcomeNewUser': 'MEMBER_JOIN'
-    };
+    } as const;
 
     async moderateNewMessage(event: MessageCreateEvent) { /* ... */ }
     async checkForSpam(event: MessageCreateEvent) { /* ... */ }
@@ -262,7 +266,9 @@ Middleware are reusable classes that process events before they reach your plugi
 
 ### Built-in Middleware Classes
 
-AccordJS provides common middleware classes:
+Built-in middleware classes are planned but not yet shipped in this branch. The examples below
+are illustrative of the intended API; for now, create custom middleware and wire it through
+`addMiddleware()`.
 
 ```typescript
 import {
@@ -327,6 +333,12 @@ class ModerationPlugin extends BasePlugin {
 }
 ```
 
+### Middleware Ordering and Timing
+
+- Global middleware runs before plugin middleware.
+- Priorities are applied within the global list and within the plugin list, not across both.
+- Plugin middleware is resolved at invocation time, so adding middleware after `register()` applies to future events.
+
 ### Creating Custom Middleware
 
 Create your own middleware by extending `BaseMiddleware`:
@@ -365,6 +377,15 @@ this.addMiddleware([
     })
 ]);
 ```
+
+### Pipeline Tracing (Framework Integrators)
+
+The event pipeline supports tracing and completion hooks for diagnostics and metrics. This is
+primarily intended for framework integrators, but it is useful to understand what is available:
+
+- `enableTracing`: capture per-stage timings in a `trace` array
+- `onComplete`: receive a `PipelineContext` with timing and trace details
+- `eventType`, `pluginName`, and stage timings are included in the context
 
 ## Advanced Plugin Development
 
@@ -874,4 +895,4 @@ export class AnalyticsPlugin extends BasePlugin {
 
 ---
 
-Happy plugin development! 🚀
+Happy plugin development!

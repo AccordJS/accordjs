@@ -1,5 +1,5 @@
-import { runMiddlewareChain } from '@app/middleware/middleware-runner';
 import type { AnyEventMiddleware } from '@app/middleware/types';
+import { getPipelineMetadata, runEventPipeline } from '@app/pipeline/event-pipeline';
 import type { EventMap } from '@app/types';
 import { createLogger } from '@app/utils/create-logger';
 import type { AnyEventHandler, EventBus, EventHandler } from './types';
@@ -40,22 +40,20 @@ export class InMemoryEventBus implements EventBus {
         const middlewareSnapshot = Array.from(this.middleware);
 
         for (const handler of handlerSnapshot) {
-            if (middlewareSnapshot.length === 0) {
-                try {
-                    // Ensure handler is called with await for potential async operations
-                    const result = handler(event);
-                    if (result instanceof Promise) {
-                        result.catch((error) => {
-                            this.logger.error(error, `Error in async handler for event ${type}`);
-                        });
-                    }
-                } catch (error) {
-                    this.logger.error(error, `Error in handler for event ${type}`);
-                }
-                continue;
-            }
+            const metadata = getPipelineMetadata(handler);
+            const pluginMiddleware = metadata?.getPluginMiddleware?.() ?? [];
 
-            runMiddlewareChain(event, middlewareSnapshot, handler, this.logger);
+            runEventPipeline({
+                event,
+                eventType: type,
+                globalMiddleware: middlewareSnapshot,
+                pluginMiddleware,
+                handler,
+                pluginName: metadata?.pluginName,
+                options: {
+                    logger: this.logger,
+                },
+            });
         }
     }
 
