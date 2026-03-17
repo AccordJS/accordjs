@@ -1,3 +1,4 @@
+import type { AnyEventMiddleware } from '@app/middleware/types';
 import type { EventMap } from '@app/types';
 
 /**
@@ -34,4 +35,26 @@ export interface EventBus {
      * @param handler - Handler function to remove
      */
     unsubscribe<K extends keyof EventMap>(type: K, handler: EventHandler<EventMap[K]>): void;
+
+    /**
+     * Registers global middleware for all events
+     * @param middleware - Middleware instance(s) to register
+     */
+    addMiddleware(middleware: AnyEventMiddleware | AnyEventMiddleware[]): void;
+
+    /**
+     * Removes previously registered middleware
+     * @param middleware - Middleware instance or name to remove
+     */
+    removeMiddleware(middleware: AnyEventMiddleware | string): void;
+
+    /**
+     * Clears all registered middleware
+     */
+    clearMiddleware(): void;
+
+    /**
+     * Lists currently registered middleware
+     */
+    listMiddleware(): AnyEventMiddleware[];
 }
