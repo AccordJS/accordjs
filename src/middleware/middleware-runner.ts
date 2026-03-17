@@ -1,9 +1,5 @@
 import { createLogger } from '@app/utils/create-logger';
-import type { EventMiddleware, MiddlewareHandler, MiddlewareNext } from './types';
-
-interface LoggerLike {
-    error: (error: unknown, message?: string) => void;
-}
+import type { EventMiddleware, MiddlewareHandler, MiddlewareLogger, MiddlewareNext } from './types';
 
 const defaultLogger = createLogger('MiddlewareRunner');
 
@@ -31,7 +27,7 @@ const sortMiddleware = <TEvent>(middleware: EventMiddleware<TEvent>[]): EventMid
 const invokeHandler = <TEvent>(
     event: TEvent,
     handler: MiddlewareHandler<TEvent>,
-    logger: LoggerLike,
+    logger: MiddlewareLogger,
     eventType: string
 ): void | Promise<void> => {
     try {
@@ -50,7 +46,7 @@ export const runMiddlewareChain = <TEvent>(
     event: TEvent,
     middleware: EventMiddleware<TEvent>[],
     handler: MiddlewareHandler<TEvent>,
-    logger: LoggerLike = defaultLogger
+    logger: MiddlewareLogger = defaultLogger
 ): void | Promise<void> => {
     if (middleware.length === 0) {
         return invokeHandler(event, handler, logger, resolveEventType(event));

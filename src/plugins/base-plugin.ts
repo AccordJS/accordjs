@@ -1,4 +1,7 @@
-import type { Plugin, PluginContext } from '@app/types/index';
+import type { EventMiddleware } from '@app/middleware/types';
+import type { EventHandlerMap, Plugin, PluginContext } from '@app/types/index';
+import { registerMappedHandlers } from './event-mapper';
+import { PluginMiddlewareManager } from './plugin-middleware-manager';
 
 /**
  * Base abstract class for all AccordJS plugins.
@@ -7,6 +10,17 @@ import type { Plugin, PluginContext } from '@app/types/index';
  * with lifecycle hooks.
  */
 export abstract class BasePlugin implements Plugin {
+    private static readonly defaultEventMap: EventHandlerMap = Object.freeze({
+        onMessageCreate: 'MESSAGE_CREATE',
+        onMemberJoin: 'MEMBER_JOIN',
+        onMemberLeave: 'MEMBER_LEAVE',
+        onMessageDelete: 'MESSAGE_DELETE',
+        onCommandDispatch: 'COMMAND_DISPATCH',
+        onCommandExecute: 'COMMAND_EXECUTE',
+        onCommandError: 'COMMAND_ERROR',
+        onCommandPermissionDenied: 'COMMAND_PERMISSION_DENIED',
+    });
+
     /**
      * Unique name of the plugin.
      */
@@ -29,6 +43,16 @@ export abstract class BasePlugin implements Plugin {
     protected context?: PluginContext;
 
     /**
+     * Explicit mapping of handler method names to event types.
+     */
+    protected readonly eventMap: EventHandlerMap = BasePlugin.defaultEventMap;
+
+    /**
+     * Plugin-scoped middleware manager.
+     */
+    private middlewareManager = new PluginMiddlewareManager();
+
+    /**
      * Framework registration method. Sets up context and calls onRegister().
      * Should not be overridden by child classes; use onRegister() instead.
      *
@@ -37,6 +61,11 @@ export abstract class BasePlugin implements Plugin {
     public async register(ctx: PluginContext): Promise<void> {
         this.context = ctx;
         await this.onRegister();
+        registerMappedHandlers(this, ctx.eventBus, this.eventMap, {
+            logger: ctx.logger,
+            getMiddleware: () => this.middlewareManager.list(),
+            suppressMissingHandlers: this.eventMap === BasePlugin.defaultEventMap,
+        });
         this.context.logger.info(`Plugin '${this.name}' registered successfully.`);
     }
 
@@ -46,5 +75,21 @@ export abstract class BasePlugin implements Plugin {
      */
     protected async onRegister(): Promise<void> {
         // Optional override for child plugins
+    }
+
+    /**
+     * Registers plugin-scoped middleware for all handlers in this plugin.
+     *
+     * @param middleware - Middleware instances to register
+     */
+    protected addMiddleware(middleware: EventMiddleware[] | EventMiddleware): void {
+        this.middlewareManager.add(middleware);
+    }
+
+    /**
+     * Returns the currently registered plugin middleware.
+     */
+    protected getPluginMiddleware(): EventMiddleware[] {
+        return this.middlewareManager.list();
     }
 }

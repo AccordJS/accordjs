@@ -21,6 +21,11 @@ export const EventTypeSchema = z.enum([
 export type EventType = z.infer<typeof EventTypeSchema>;
 
 /**
+ * Explicit mapping of handler method names to event types
+ */
+export type EventHandlerMap = Record<string, EventType>;
+
+/**
  * Base properties shared by all events
  */
 export const BaseEventSchema = z.object({
