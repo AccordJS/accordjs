@@ -19,6 +19,7 @@ describe('LoggerMiddleware', () => {
 
         await middleware.execute(event, next);
 
+        expect(next).toHaveBeenCalledTimes(1);
         expect(info).toHaveBeenCalledTimes(1);
         const call = info.mock.calls[0];
         if (!call) {

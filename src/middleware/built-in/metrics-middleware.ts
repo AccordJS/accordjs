@@ -54,8 +54,11 @@ export class MetricsMiddleware<TEvent = BotEvent> extends BaseMiddleware<TEvent>
             return;
         }
 
-        await next();
-        this.onRecord?.(this.getMetrics());
+        try {
+            await next();
+        } finally {
+            this.onRecord?.(this.getMetrics());
+        }
     }
 
     public getMetrics(): MetricsSnapshot {

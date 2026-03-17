@@ -11,7 +11,7 @@ export interface ProfanityFilterOptions {
     matchWholeWord?: boolean;
 }
 
-const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&');
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 export class ProfanityFilterMiddleware<TEvent = BotEvent> extends BaseMiddleware<TEvent> {
     private regex: RegExp | null;
