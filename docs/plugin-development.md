@@ -335,6 +335,7 @@ Create your own middleware by extending `BaseMiddleware`:
 // src/plugins/moderation/middleware/custom-filter-middleware.ts
 import { BaseMiddleware } from '@app/middleware/base-middleware';
 import type { EventMiddleware } from '@app/middleware/types';
+import type { BotEvent } from '@app/types';
 
 export class CustomFilterMiddleware extends BaseMiddleware implements EventMiddleware {
     public readonly name = 'CustomFilter';
@@ -344,14 +345,14 @@ export class CustomFilterMiddleware extends BaseMiddleware implements EventMiddl
         super();
     }
 
-    async execute(event: any, next: () => Promise<void>): Promise<void> {
+    async execute(event: BotEvent, next: () => Promise<void>): Promise<void> {
         // Skip events from non-allowed channels
-        if (event.channelId && !this.config.allowedChannels.includes(event.channelId)) {
+        if ('channelId' in event && event.channelId && !this.config.allowedChannels.includes(event.channelId)) {
             return; // Skip processing
         }
 
         // Add custom metadata
-        event.isFromAllowedChannel = true;
+        (event as Record<string, unknown>).isFromAllowedChannel = true;
 
         await next(); // Continue to next middleware or handler
     }
@@ -470,6 +471,9 @@ export class ConfigurablePlugin extends BasePlugin {
 Implement comprehensive error handling:
 
 ```typescript
+import { BasePlugin } from '@app/plugins/base-plugin';
+import type { BotEvent, MessageCreateEvent, CommandDispatchEvent } from '@app/types';
+
 export class RobustPlugin extends BasePlugin {
     protected readonly eventMap = {
         'processMessage': 'MESSAGE_CREATE',
@@ -492,15 +496,19 @@ export class RobustPlugin extends BasePlugin {
         }
     }
 
-    private async handleError(method: string, error: unknown, event: any): Promise<void> {
+    private async handleError(method: string, error: unknown, event: BotEvent): Promise<void> {
         const errorMessage = error instanceof Error ? error.message : String(error);
 
-        this.context!.logger.error(error, {
-            method,
-            eventType: event.type,
-            userId: event.userId,
-            messageId: event.messageId
-        });
+        this.context!.logger.error(
+            {
+                err: error,
+                method,
+                eventType: event.type,
+                userId: 'userId' in event ? event.userId : undefined,
+                messageId: 'messageId' in event ? event.messageId : undefined
+            },
+            `Plugin error in ${method}: ${errorMessage}`
+        );
 
         // Publish error event for monitoring
         await this.context!.eventBus.publish('PLUGIN_ERROR', {
@@ -511,7 +519,7 @@ export class RobustPlugin extends BasePlugin {
             error: errorMessage,
             eventData: {
                 type: event.type,
-                userId: event.userId
+                userId: 'userId' in event ? event.userId : undefined
             }
         });
     }
@@ -530,7 +538,7 @@ import { describe, expect, it, mock } from 'bun:test';
 import { InMemoryEventBus } from '@app/bus/in-memory-event-bus';
 import { WelcomePlugin } from '@app/plugins/welcome/welcome-plugin';
 import { createLogger } from '@app/utils/create-logger';
-import type { PluginContext } from '@app/types';
+import type { Config, PluginContext } from '@app/types';
 
 describe('WelcomePlugin', () => {
     const createMockContext = (): PluginContext => ({
@@ -539,7 +547,7 @@ describe('WelcomePlugin', () => {
             env: 'test',
             log: { level: 'info' },
             discord: { token: 'test', clientId: 'test' },
-        } as any,
+        } as Config,
         logger: createLogger('Test'),
     });
 
