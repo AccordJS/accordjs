@@ -15,7 +15,7 @@ export abstract class BaseMiddleware<TEvent = BotEvent> implements EventMiddlewa
 
     public get name(): string {
         const className = this.constructor.name;
-        return className.endsWith(MIDDLEWARE_SUFFIX) ? className.slice(0, -MIDDLEWARE_SUFFIX.length) : className;
+        return className.slice(0, -MIDDLEWARE_SUFFIX.length);
     }
 
     public abstract execute(event: TEvent, next: MiddlewareNext): void | Promise<void>;
