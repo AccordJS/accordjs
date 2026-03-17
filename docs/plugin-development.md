@@ -266,8 +266,9 @@ Middleware are reusable classes that process events before they reach your plugi
 
 ### Built-in Middleware Classes
 
-Built-in middleware classes are planned but not yet shipped in this branch. You can create
-custom middleware today and wire it through `addMiddleware()`.
+Built-in middleware classes are planned but not yet shipped in this branch. The examples below
+are illustrative of the intended API; for now, create custom middleware and wire it through
+`addMiddleware()`.
 
 ```typescript
 import {
