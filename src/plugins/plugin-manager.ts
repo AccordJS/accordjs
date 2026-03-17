@@ -1,6 +1,6 @@
 import type { EventBus } from '@app/bus/types';
 import type { Config } from '@app/config';
-import type { Plugin, PluginContext } from '@app/types/index';
+import type { Plugin, PluginContext } from '@app/types';
 import { createLogger } from '@app/utils/create-logger';
 
 /**

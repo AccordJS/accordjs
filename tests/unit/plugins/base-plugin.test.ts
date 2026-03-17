@@ -22,11 +22,16 @@ class MockPlugin extends BasePlugin {
 describe('BasePlugin', () => {
     it('should set context and execute onRegister lifecycle hook', async () => {
         const plugin = new MockPlugin();
+        const eventBus = {
+            subscribe: mock(() => {}),
+        };
         const mockContext = {
-            eventBus: {},
+            eventBus,
             config: {},
             logger: {
                 info: mock(() => {}),
+                warn: mock(() => {}),
+                error: mock(() => {}),
             },
         } as unknown as PluginContext;
 
@@ -35,6 +40,7 @@ describe('BasePlugin', () => {
         expect(plugin.onRegisterCalled).toBe(true);
         expect(plugin.getPluginContext()).toBe(mockContext);
         expect(mockContext.logger.info).toHaveBeenCalled();
+        expect(eventBus.subscribe).toHaveBeenCalledTimes(0);
     });
 
     it('should expose plugin metadata', () => {
