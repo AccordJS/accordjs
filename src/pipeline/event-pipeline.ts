@@ -44,6 +44,50 @@ export interface EventPipelineArgs<TEvent> {
     options?: EventPipelineOptions;
 }
 
+const traceExecution = <TResult>(
+    trace: PipelineTraceEntry[],
+    stage: PipelineStage,
+    name: string,
+    getTime: () => number,
+    fn: () => TResult | Promise<TResult>
+): TResult | Promise<TResult> => {
+    const startedAt = getTime();
+    const entry: PipelineTraceEntry = {
+        stage,
+        name,
+        durationMs: 0,
+    };
+    trace.push(entry);
+
+    const finalize = (error?: unknown) => {
+        entry.durationMs = getTime() - startedAt;
+        if (error) {
+            entry.error = error;
+        }
+    };
+
+    try {
+        const result = fn();
+        if (result instanceof Promise) {
+            return result
+                .then((value) => {
+                    finalize();
+                    return value;
+                })
+                .catch((error) => {
+                    finalize(error);
+                    throw error;
+                });
+        }
+
+        finalize();
+        return result;
+    } catch (error) {
+        finalize(error);
+        throw error;
+    }
+};
+
 const wrapMiddleware = <TEvent>(
     middleware: EventMiddleware<TEvent>[],
     stage: PipelineStage,
@@ -54,45 +98,9 @@ const wrapMiddleware = <TEvent>(
         name: current.name,
         priority: current.priority,
         execute: (event, next) => {
-            const startedAt = getTime();
-            try {
-                const result = current.execute.call(current, event, next);
-                if (result instanceof Promise) {
-                    return result
-                        .then(() => {
-                            trace.push({
-                                stage,
-                                name: current.name,
-                                durationMs: getTime() - startedAt,
-                            });
-                        })
-                        .catch((error) => {
-                            trace.push({
-                                stage,
-                                name: current.name,
-                                durationMs: getTime() - startedAt,
-                                error,
-                            });
-                            throw error;
-                        });
-                }
-
-                trace.push({
-                    stage,
-                    name: current.name,
-                    durationMs: getTime() - startedAt,
-                });
-
-                return result;
-            } catch (error) {
-                trace.push({
-                    stage,
-                    name: current.name,
-                    durationMs: getTime() - startedAt,
-                    error,
-                });
-                throw error;
-            }
+            return traceExecution(trace, stage, current.name, getTime, () => {
+                return current.execute.call(current, event, next);
+            });
         },
     }));
 };
@@ -103,45 +111,7 @@ const wrapHandler = <TEvent>(
     getTime: () => number
 ): MiddlewareHandler<TEvent> => {
     return (event) => {
-        const startedAt = getTime();
-        try {
-            const result = handler(event);
-            if (result instanceof Promise) {
-                return result
-                    .then(() => {
-                        trace.push({
-                            stage: 'handler',
-                            name: 'handler',
-                            durationMs: getTime() - startedAt,
-                        });
-                    })
-                    .catch((error) => {
-                        trace.push({
-                            stage: 'handler',
-                            name: 'handler',
-                            durationMs: getTime() - startedAt,
-                            error,
-                        });
-                        throw error;
-                    });
-            }
-
-            trace.push({
-                stage: 'handler',
-                name: 'handler',
-                durationMs: getTime() - startedAt,
-            });
-
-            return result;
-        } catch (error) {
-            trace.push({
-                stage: 'handler',
-                name: 'handler',
-                durationMs: getTime() - startedAt,
-                error,
-            });
-            throw error;
-        }
+        return traceExecution(trace, 'handler', 'handler', getTime, () => handler(event));
     };
 };
 
