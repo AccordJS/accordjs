@@ -1,0 +1,35 @@
+src/middleware/base-middleware.ts
+  bda0d5a3620814b0 1-22
+tests/unit/middleware/middleware-runner.test.ts
+  bda0d5a3620814b0 1-91
+src/middleware/middleware-runner.ts
+  bda0d5a3620814b0 1-103
+src/bus/in-memory-event-bus.ts
+  bda0d5a3620814b0 1-2,19-22,40,43,49-50,52-53,55,57-58,88-109,111-126
+src/middleware/types.ts
+  bda0d5a3620814b0 1-13
+tests/unit/middleware/base-middleware.test.ts
+  bda0d5a3620814b0 1-41
+src/bus/types.ts
+  bda0d5a3620814b0 1,38-59
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.12",
+  "base_commit_sha": "07669c14b32917c5504d9baf25d8738d83d59963",
+  "prompts": {
+    "bda0d5a3620814b0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019cfa61-2c09-7d13-bd3e-0096b44387fe",
+        "model": "gpt-5.2-codex"
+      },
+      "human_author": "Angel S. Moreno <angelxmoreno@gmail.com>",
+      "messages": [],
+      "total_additions": 421,
+      "total_deletions": 9,
+      "accepted_lines": 415,
+      "overriden_lines": 0
+    }
+  }
+}
