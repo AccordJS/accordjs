@@ -63,7 +63,7 @@ export abstract class BasePlugin implements Plugin {
         await this.onRegister();
         registerMappedHandlers(this, ctx.eventBus, this.eventMap, {
             logger: ctx.logger,
-            middleware: this.middlewareManager.list(),
+            getMiddleware: () => this.middlewareManager.list(),
             suppressMissingHandlers: this.eventMap === BasePlugin.defaultEventMap,
         });
         this.context.logger.info(`Plugin '${this.name}' registered successfully.`);

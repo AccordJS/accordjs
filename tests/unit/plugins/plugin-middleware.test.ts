@@ -24,6 +24,10 @@ class MiddlewarePlugin extends BasePlugin {
         return this.getPluginMiddleware() as TestMiddleware[];
     }
 
+    public addAfterRegister(): void {
+        this.addMiddleware([new TestMiddleware()]);
+    }
+
     public async handleMessage(_event: MessageCreateEvent): Promise<void> {
         // no-op
     }
@@ -51,5 +55,29 @@ describe('Plugin middleware', () => {
         const middleware = plugin.getRegisteredMiddleware();
         expect(middleware).toHaveLength(1);
         expect(middleware[0]).toBeInstanceOf(TestMiddleware);
+    });
+
+    it('allows adding middleware after registration', async () => {
+        const plugin = new MiddlewarePlugin();
+        const subscribe = mock(() => {});
+        const eventBus = {
+            subscribe,
+        };
+        const context = {
+            eventBus,
+            config: {},
+            logger: {
+                info: mock(() => {}),
+                warn: mock(() => {}),
+                error: mock(() => {}),
+            },
+        } as unknown as PluginContext;
+
+        await plugin.register(context);
+
+        plugin.addAfterRegister();
+
+        const middleware = plugin.getRegisteredMiddleware();
+        expect(middleware).toHaveLength(2);
     });
 });

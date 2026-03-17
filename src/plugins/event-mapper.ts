@@ -11,6 +11,7 @@ interface LoggerLike extends MiddlewareLogger {
 export interface EventMapperOptions {
     logger?: LoggerLike;
     middleware?: EventMiddleware[];
+    getMiddleware?: () => EventMiddleware[];
     suppressMissingHandlers?: boolean;
 }
 
@@ -25,18 +26,17 @@ export const registerMappedHandlers = (
         suppressMissingHandlers: options.suppressMissingHandlers,
     });
 
-    const middleware = options.middleware ?? [];
     const handlers = registry.resolve(eventMap);
 
     for (const mapped of handlers) {
         const { eventType, handler } = mapped;
 
-        if (middleware.length === 0) {
-            eventBus.subscribe(eventType, handler);
-            continue;
-        }
-
         const wrappedHandler = (event: EventMap[typeof eventType]): void | Promise<void> => {
+            const middleware = options.getMiddleware?.() ?? options.middleware ?? [];
+            if (middleware.length === 0) {
+                return handler(event);
+            }
+
             return runMiddlewareChain(
                 event,
                 middleware as EventMiddleware<EventMap[typeof eventType]>[],
@@ -45,6 +45,11 @@ export const registerMappedHandlers = (
             );
         };
 
-        eventBus.subscribe(eventType, wrappedHandler);
+        if (options.getMiddleware || (options.middleware && options.middleware.length > 0)) {
+            eventBus.subscribe(eventType, wrappedHandler);
+            continue;
+        }
+
+        eventBus.subscribe(eventType, handler);
     }
 };
