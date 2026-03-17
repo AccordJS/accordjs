@@ -195,6 +195,8 @@ When adding new plugins:
 3. Follow the existing plugin patterns
 4. Add proper TypeScript types
 
+For comprehensive plugin development guidance, see our [Plugin Development Guide](docs/plugin-development.md).
+
 ## Scripts
 
 | Script | Description |

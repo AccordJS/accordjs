@@ -228,6 +228,8 @@ eventBus.subscribe('MESSAGE_CREATE', async (event) => {
 });
 ```
 
+For detailed plugin development guidance, see our [Plugin Development Guide](docs/plugin-development.md).
+
 ## Acknowledgments
 
 - [Discord.js](https://discord.js.org/) - Discord API library
