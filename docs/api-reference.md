@@ -186,9 +186,9 @@ Creates a Pino logger namespaced with the provided component name.
 
 ## Advanced/Lower-Level APIs
 
-These are exported for advanced use; they are stable but bypass higher-level conveniences:
-- Middleware primitives: `@app/middleware/types`, `@app/middleware/base-middleware`, `@app/middleware/middleware-runner`
-- Built-in middleware: `@app/middleware/built-in`
-- Config loader: `@app/middleware/config-loader`
-- Pipeline helpers: `@app/pipeline/event-pipeline`, `@app/pipeline/pipeline-context`
-- Plugin wiring helpers: `@app/plugins/event-mapper`, `@app/plugins/handler-registry`, `@app/plugins/plugin-middleware-manager`
+These symbols are exported from the package barrel for advanced use (no `@app/` paths needed):
+- Middleware primitives: `BaseMiddleware`, `EventMiddleware`, `MiddlewareNext`, `MiddlewareHandler`, `MiddlewareLogger`, `runMiddlewareChain`
+- Built-in middleware classes: `BotFilterMiddleware`, `RateLimiterMiddleware`, `ProfanityFilterMiddleware`, `LoggerMiddleware`, `MetricsMiddleware`
+- Config loader: `loadGlobalMiddleware`
+- Pipeline helpers: `runEventPipeline`, `PipelineContext`, `PipelineTraceEntry`, `PipelineStage`
+- Plugin wiring helpers: `registerMappedHandlers`, `HandlerRegistry`, `PluginMiddlewareManager`
