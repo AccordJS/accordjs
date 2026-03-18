@@ -1,4 +1,4 @@
-import type { PluginContext } from '@app/types';
+import type { MessageCreateEvent, PluginContext } from '@app/types';
 import { BasePlugin } from '../base-plugin';
 import { InMemoryCommandRegistry } from './command-registry';
 import { CommandParser } from './parser';
@@ -20,6 +20,9 @@ interface ChunkedTimeout {
  */
 export class CommandRouterPlugin extends BasePlugin {
     public readonly name = 'CommandRouter';
+    protected override readonly eventMap = {
+        handleMessageCreate: 'MESSAGE_CREATE',
+    } as const;
     protected registry: CommandRegistry;
     protected parser: CommandParser;
     protected cooldowns = new Map<string, Map<string, number>>();
@@ -39,78 +42,75 @@ export class CommandRouterPlugin extends BasePlugin {
     }
 
     /**
-     * Registers the command router plugin and starts listening for events.
+     * Handles MESSAGE_CREATE events via eventMap registration.
      */
-    protected override async onRegister(): Promise<void> {
+    public async handleMessageCreate(event: MessageCreateEvent): Promise<void> {
         if (!this.context) {
             throw new Error('Plugin context not available');
         }
 
         const context = this.context;
-        context.eventBus.subscribe('MESSAGE_CREATE', async (event) => {
-            if (event.isBot) {
-                return;
-            }
 
-            const parseResult = this.parser.parse(event.content);
-            if (!parseResult.isCommand || !parseResult.commandName) {
-                return;
-            }
+        if (event.isBot) {
+            return;
+        }
 
-            const command = this.registry.find(parseResult.commandName);
-            if (!command) {
-                context.logger.debug(`Command not found: '${parseResult.commandName}'`);
-                return;
-            }
+        const parseResult = this.parser.parse(event.content);
+        if (!parseResult.isCommand || !parseResult.commandName) {
+            return;
+        }
 
-            // 1. Check Permissions (Security-first: fail closed if permissions are defined)
-            if (command.permissions && command.permissions.length > 0) {
-                // Security-first approach: deny access if permissions are defined but not validated
-                context.logger.warn(
-                    `Command '${command.name}' requires permissions ${JSON.stringify(command.permissions)} but permission validation is not implemented. Access denied.`
+        const command = this.registry.find(parseResult.commandName);
+        if (!command) {
+            context.logger.debug(`Command not found: '${parseResult.commandName}'`);
+            return;
+        }
+
+        // 1. Check Permissions (Security-first: fail closed if permissions are defined)
+        if (command.permissions && command.permissions.length > 0) {
+            // Security-first approach: deny access if permissions are defined but not validated
+            context.logger.warn(
+                `Command '${command.name}' requires permissions ${JSON.stringify(command.permissions)} but permission validation is not implemented. Access denied.`
+            );
+
+            // Publish a permission denied event for auditing
+            context.eventBus.publish('COMMAND_PERMISSION_DENIED', {
+                type: 'COMMAND_PERMISSION_DENIED',
+                timestamp: Date.now(),
+                userId: event.userId,
+                channelId: event.channelId,
+                serverId: event.serverId,
+                commandName: command.name,
+                requiredPermissions: command.permissions,
+                reason: 'Permission validation not implemented',
+            });
+
+            return; // Fail closed - deny access
+        }
+
+        // 2. Check Cooldown
+        if (command.cooldown) {
+            const now = Date.now();
+            const timestamps = this.cooldowns.get(command.name) ?? new Map<string, number>();
+            const expirationTime = (timestamps.get(event.userId) ?? 0) + command.cooldown;
+
+            if (now < expirationTime) {
+                const timeLeft = (expirationTime - now) / 1000;
+                context.logger.info(
+                    `User ${event.userId} is on cooldown for command '${command.name}'. ${timeLeft.toFixed(1)}s left.`
                 );
-
-                // Publish a permission denied event for auditing
-                context.eventBus.publish('COMMAND_PERMISSION_DENIED', {
-                    type: 'COMMAND_PERMISSION_DENIED',
-                    timestamp: Date.now(),
-                    userId: event.userId,
-                    channelId: event.channelId,
-                    serverId: event.serverId,
-                    commandName: command.name,
-                    requiredPermissions: command.permissions,
-                    reason: 'Permission validation not implemented',
-                });
-
-                return; // Fail closed - deny access
+                return;
             }
 
-            // 2. Check Cooldown
-            if (command.cooldown) {
-                const now = Date.now();
-                const timestamps = this.cooldowns.get(command.name) ?? new Map<string, number>();
-                const expirationTime = (timestamps.get(event.userId) ?? 0) + command.cooldown;
+            // Set new cooldown timestamp
+            timestamps.set(event.userId, now);
+            this.cooldowns.set(command.name, timestamps);
 
-                if (now < expirationTime) {
-                    const timeLeft = (expirationTime - now) / 1000;
-                    context.logger.info(
-                        `User ${event.userId} is on cooldown for command '${command.name}'. ${timeLeft.toFixed(1)}s left.`
-                    );
-                    return;
-                }
+            // Schedule cleanup to prevent memory leaks
+            this.scheduleCooldownCleanup(command.name, event.userId, command.cooldown, context);
+        }
 
-                // Set new cooldown timestamp
-                timestamps.set(event.userId, now);
-                this.cooldowns.set(command.name, timestamps);
-
-                // Schedule cleanup to prevent memory leaks
-                this.scheduleCooldownCleanup(command.name, event.userId, command.cooldown, context);
-            }
-
-            await this.dispatch(command, event, parseResult.args ?? [], context);
-        });
-
-        context.logger.info(`Command router registered with registry and parser.`);
+        await this.dispatch(command, event, parseResult.args ?? [], context);
     }
 
     /**
