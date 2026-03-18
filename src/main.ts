@@ -7,6 +7,7 @@ import { createDiscordClient } from '@app/bot/client';
 import { GatewayAdapter } from '@app/bot/gateway';
 import { InMemoryEventBus } from '@app/bus/in-memory-event-bus';
 import { createConfig } from '@app/config';
+import { loadGlobalMiddleware } from '@app/middleware/config-loader';
 import { PluginManager } from '@app/plugins/plugin-manager';
 import { createLogger } from '@app/utils/create-logger';
 
@@ -22,6 +23,13 @@ try {
     // 2. Initialize Event Bus
     const eventBus = new InMemoryEventBus();
     logger.info('Event bus initialized.');
+
+    // 2.5 Load global middleware from configuration
+    const globalMiddleware = loadGlobalMiddleware(config);
+    if (globalMiddleware.length > 0) {
+        eventBus.addMiddleware(globalMiddleware);
+    }
+    logger.info({ count: globalMiddleware.length }, 'Global middleware configured.');
 
     // 3. Initialize Plugin Manager
     const _pluginManager = new PluginManager(eventBus, config);
