@@ -2,7 +2,7 @@
 
 This guide shows how to bootstrap AccordJS with your own entrypoint.
 
-`src/main.ts` in this repository is an internal example bootstrap. If you consume AccordJS as a module, you should define your own startup file and register your own plugins there.
+`examples/main.ts` in this repository is an internal example bootstrap. If you consume AccordJS as a module, you should define your own startup file and register your own plugins there.
 
 ## Prerequisites
 

@@ -85,7 +85,7 @@ Implemented:
 - Middleware primitives in `src/middleware/types.ts`, `src/middleware/base-middleware.ts`, and `src/middleware/middleware-runner.ts`.
 - Pipeline context/execution in `src/pipeline/pipeline-context.ts` and `src/pipeline/event-pipeline.ts`.
 - Built-in middleware in `src/middleware/built-in/`.
-- Config-driven global middleware loading in `src/middleware/config-loader.ts` and startup wiring in `src/main.ts`.
+- Config-driven global middleware loading in `src/middleware/config-loader.ts` (consumer bootstrap chooses whether to wire it).
 - Coverage in `tests/unit/middleware/`, `tests/unit/pipeline/event-pipeline.test.ts`, and `tests/integration/pipeline/full-pipeline.test.ts`.
 
 ### Phase 8: Documentation and Examples
@@ -112,8 +112,8 @@ Reason:
 Status: `Deprecated`
 
 Reason:
-- Current architecture uses `src/main.ts` bootstrap + `PluginManager` + `InMemoryEventBus`.
-- `src/framework.ts` and `src/lifecycle.ts` are not required by the current design.
+- Consumers provide their own bootstrap using `PluginManager` + `InMemoryEventBus`.
+- `src/framework.ts`, `src/lifecycle.ts`, and `src/main.ts` are not required by the current design (an example bootstrap now lives under `examples/`).
 
 ### Phase 11: Analytics Plugin
 Status: `Not Started`
