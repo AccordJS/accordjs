@@ -1,4 +1,4 @@
-import type { Config } from '@app/config';
+import type { Config, MiddlewareConfig } from '@app/config';
 import {
     BotFilterMiddleware,
     LoggerMiddleware,
@@ -30,7 +30,7 @@ const keyGenerators: Record<RateLimitKey, (event: BotEvent) => string> = {
 
 export const loadGlobalMiddleware = (config: Config): AnyEventMiddleware[] => {
     const middleware: AnyEventMiddleware[] = [];
-    const globalConfig = config.middleware.global;
+    const globalConfig: MiddlewareConfig['global'] = config.middleware.global;
 
     if (globalConfig.botFilter.enabled) {
         middleware.push(new BotFilterMiddleware());
