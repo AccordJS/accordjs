@@ -271,30 +271,30 @@ new BotFilterMiddleware()
 **Goal:** Enable middleware configuration through the main config system
 
 **Files to Create:**
-- `src/config/middleware-config.ts` - Middleware configuration schema
 - `src/middleware/config-loader.ts` - Configuration-based middleware loading
 
 **Files to Modify:**
 - `src/config.ts` - Add middleware configuration section
-- `src/index.ts` - Load middleware from configuration
+- `src/main.ts` - Load middleware from configuration
 
 **Tests to Create:**
-- `tests/unit/config/middleware-config.test.ts` - Middleware configuration tests
-- `tests/integration/config/middleware-loading.test.ts` - Configuration loading tests
+- `tests/unit/middleware/config-loader.test.ts` - Middleware configuration tests
+- `tests/integration/middleware/config-loading.test.ts` - Configuration loading tests
 
 **Implementation Notes:**
 - Add middleware section to main configuration schema
 - Support enabling/disabling middleware via config
 - Allow middleware-specific configuration options
-- Implement configuration validation with Zod
-- Support environment variable overrides for middleware settings
+- Implement configuration validation with Zod and env overrides
+- Load and register global middleware during framework startup
+- Support simple rate limit key strategies (`userId`, `channelId`, `serverId`, `eventType`, `global`)
 
 **Configuration Example:**
 ```typescript
 // In config schema
 middleware: {
     global: {
-        rateLimit: {
+        rateLimiter: {
             enabled: true,
             windowMs: 60000,
             maxEvents: 10
@@ -311,67 +311,47 @@ middleware: {
 
 ---
 
-## Phase 7: Migration Guide and Examples
-**Goal:** Create migration documentation and update existing plugins to use new architecture
+## Phase 7: Documentation and Examples
+**Goal:** Document the new architecture and provide concrete examples (no migration needed)
 
 **Files to Create:**
-- `docs/migration-guide.md` - Guide for migrating existing plugins
-- `examples/new-plugin-examples/` - Example plugins using new architecture
-- `examples/middleware-examples/` - Example middleware implementations
+- `examples/eventmap-middleware-plugin.ts` - Example plugin using eventMap + middleware
 
 **Files to Modify:**
 - `docs/plugin-development.md` - Update with new architecture documentation
-- Existing plugins - Migrate to new architecture (optional)
+- `docs/new-plugin-architecture.md` - Reflect completed phases and actual approach
 
 **Tests to Create:**
-- `tests/examples/new-architecture.test.ts` - Test example implementations
+- `tests/examples/eventmap-middleware-plugin.test.ts` - Optional example verification
 
 **Implementation Notes:**
-- Provide step-by-step migration instructions
-- Show before/after comparisons for common patterns
+- Provide step-by-step onboarding for the new plugin lifecycle
 - Create comprehensive examples showcasing new features
 - Document best practices for middleware development
 - Include performance considerations and optimization tips
 
-**Migration Examples:**
-- Convert command plugin to use explicit event mapping
-- Add middleware classes to existing moderation plugin
-- Create new plugin using full new architecture
+**Example Topics:**
+- Explicit event mapping with semantic method names
+- Plugin-scoped middleware chain configuration
+- Global middleware configuration via config
 
-**Commit Message:** `docs: added migration guide and examples for new plugin architecture`
+**Commit Message:** `docs: added architecture examples and onboarding guidance`
 
 ---
 
-## Phase 8: Backward Compatibility
-**Goal:** Ensure existing plugins continue to work while providing migration path
-
-**Files to Create:**
-- `src/plugins/legacy-support.ts` - Backward compatibility helpers
-- `src/plugins/deprecation-warnings.ts` - Deprecation warning system
+## Phase 8: Finalization (No Legacy Support Needed)
+**Goal:** Finalize the architecture as the baseline (no migration/backward compatibility required)
 
 **Files to Modify:**
-- `src/plugins/base-plugin.ts` - Add backward compatibility mode
-- `src/types/plugin.ts` - Add legacy plugin types
-
-**Tests to Create:**
-- `tests/unit/plugins/legacy-support.test.ts` - Backward compatibility tests
-- `tests/integration/plugins/mixed-architecture.test.ts` - Old and new plugins together
+- `docs/new-plugin-architecture.md` - Remove migration/backward compatibility assumptions
+- `docs/plugin-development.md` - Reinforce the new architecture as the only path
 
 **Implementation Notes:**
-- Maintain support for manual event subscription
-- Add deprecation warnings for old patterns
-- Provide automatic detection of old vs. new plugin styles
-- Create migration utilities for automated conversion
-- Document deprecation timeline and migration requirements
+- No legacy plugin support is needed because the architecture was not released previously
+- Keep explicit event mapping and middleware as the sole supported plugin API
+- Focus on clarity and consistency rather than dual-path support
 
-**Backward Compatibility Features:**
-- Detect if plugin uses `onRegister()` with manual subscriptions
-- Support both old and new plugin styles simultaneously
-- Gradual migration path with warnings
-- Legacy plugin wrapper for new middleware system
-- Allow plugins without `eventMap` to continue using manual subscription
-
-**Commit Message:** `feat: added backward compatibility support for existing plugins`
+**Commit Message:** `docs: finalized new plugin architecture without legacy paths`
 
 ---
 
@@ -395,11 +375,10 @@ middleware: {
 - Error handling with detailed context
 - Consistent logging patterns
 
-### Migration Strategy
-- Phase 7 completes before touching existing code
-- Gradual rollout with feature flags if needed
-- Clear deprecation timeline
-- Maintain full backward compatibility during transition
+### Adoption Notes
+- No migration or backward compatibility is required (architecture was unreleased)
+- Treat the new plugin architecture as the baseline API
+- Keep documentation focused on the single, supported path
 
 ---
 
@@ -429,4 +408,4 @@ middleware: {
 **Total Phases:** 8
 **Estimated Timeline:** Each phase represents 2-4 days of development
 **Dependencies:** Phases should be implemented sequentially for best results
-**Backward Compatibility:** Maintained throughout implementation
+**Backward Compatibility:** Not required (architecture unreleased)

@@ -307,6 +307,58 @@ new MetricsMiddleware({
 })
 ```
 
+### Global Middleware Configuration
+
+Global middleware is configured through the framework config and loaded during startup. This lets you
+enable middleware once for the entire bot instead of repeating it in every plugin.
+
+```typescript
+// Config shape (createConfig())
+middleware: {
+    global: {
+        botFilter: { enabled: true },
+        rateLimiter: {
+            enabled: true,
+            windowMs: 60000,
+            maxEvents: 10,
+            block: true,
+            key: 'userId', // 'userId' | 'channelId' | 'serverId' | 'eventType' | 'global'
+            pruneIntervalMs: 60000
+        },
+        profanityFilter: {
+            enabled: false,
+            bannedWords: ['spam', 'abuse'],
+            action: 'flag',
+            replacement: '***',
+            caseSensitive: false,
+            matchWholeWord: true
+        },
+        logger: {
+            enabled: false,
+            logLevel: 'info',
+            includeContent: false,
+            sensitiveFields: ['token', 'password']
+        },
+        metrics: {
+            enabled: false,
+            trackCounts: true,
+            trackPerformance: false
+        }
+    }
+}
+```
+
+Env overrides follow the config path. Lists use comma-separated values:
+
+```bash
+MIDDLEWARE_GLOBAL_RATE_LIMITER_ENABLED=true
+MIDDLEWARE_GLOBAL_RATE_LIMITER_WINDOW_MS=60000
+MIDDLEWARE_GLOBAL_RATE_LIMITER_MAX_EVENTS=10
+MIDDLEWARE_GLOBAL_RATE_LIMITER_KEY=userId
+MIDDLEWARE_GLOBAL_PROFANITY_FILTER_BANNED_WORDS=spam,abuse
+MIDDLEWARE_GLOBAL_LOGGER_SENSITIVE_FIELDS=token,password
+```
+
 ### Using Middleware in Plugins
 
 Add middleware to your plugin in the `onRegister()` method:
@@ -733,6 +785,8 @@ describe('CustomFilterMiddleware', () => {
 - **Context information**: Include relevant event context
 
 ## Examples
+
+See `examples/eventmap-middleware-plugin.ts` for a complete eventMap + middleware example.
 
 ### Moderation Plugin
 
