@@ -124,10 +124,7 @@ Notes:
 
 ## Current Gaps (Priority Ordered)
 
-1. Add focused tests for config-driven middleware loading behavior (`src/middleware/config-loader.ts`).
-2. Add startup integration coverage for global middleware wiring in `src/main.ts`.
-3. Publish missing docs (`docs/getting-started.md`, `docs/api-reference.md`).
-4. Expand examples to include command router + global middleware configuration together.
+- None currently identified. Future work includes optional analytics plugin and additional examples as needed.
 
 ## Out of Scope
 

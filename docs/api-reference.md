@@ -184,13 +184,11 @@ Exported event schemas/types include:
 ### `createLogger(name: string)`
 Creates a Pino logger namespaced with the provided component name.
 
-## Internal APIs (Repository Use)
+## Advanced/Lower-Level APIs
 
-These are currently used internally and are not part of the documented root export surface:
-- `src/middleware/*`
-- `src/pipeline/*`
-- `src/middleware/config-loader.ts`
-- `src/plugins/event-mapper.ts`
-- `src/plugins/handler-registry.ts`
-
-If these should be part of the public npm API, add them to `src/index.ts` and cover them in compatibility documentation.
+These are exported for advanced use; they are stable but bypass higher-level conveniences:
+- Middleware primitives: `@app/middleware/types`, `@app/middleware/base-middleware`, `@app/middleware/middleware-runner`
+- Built-in middleware: `@app/middleware/built-in`
+- Config loader: `@app/middleware/config-loader`
+- Pipeline helpers: `@app/pipeline/event-pipeline`, `@app/pipeline/pipeline-context`
+- Plugin wiring helpers: `@app/plugins/event-mapper`, `@app/plugins/handler-registry`, `@app/plugins/plugin-middleware-manager`
