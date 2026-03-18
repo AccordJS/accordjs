@@ -275,7 +275,7 @@ new BotFilterMiddleware()
 
 **Files to Modify:**
 - `src/config.ts` - Add middleware configuration section
-- `src/main.ts` - Load middleware from configuration
+- Consumer bootstrap (example: `examples/main.ts`) - Load middleware from configuration
 
 **Tests to Create:**
 - `tests/unit/middleware/config-loader.test.ts` - Middleware configuration tests

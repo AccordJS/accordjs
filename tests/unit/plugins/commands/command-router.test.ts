@@ -1,8 +1,9 @@
 import { describe, expect, it, mock } from 'bun:test';
 import { InMemoryEventBus } from '@app/bus/in-memory-event-bus';
+import type { EventBus, EventHandler } from '@app/bus/types';
 import type { Config } from '@app/config';
 import { CommandRouterPlugin } from '@app/plugins/commands/command-router';
-import type { PluginContext } from '@app/types';
+import type { EventMap, PluginContext } from '@app/types';
 import type {
     CommandDispatchEvent,
     CommandErrorEvent,
@@ -20,6 +21,66 @@ describe('CommandRouterPlugin', () => {
             discord: { token: 'test', clientId: 'test' },
         } as Config,
         logger: createLogger('Test'),
+    });
+
+    it('registers handler via eventMap and dispatches through publish', async () => {
+        const subscribe = mock(<K extends keyof EventMap>(_type: K, handler: EventHandler<EventMap[K]>): void => {
+            registeredHandler = handler as EventHandler<EventMap[keyof EventMap]>;
+        });
+        const published: string[] = [];
+        let registeredHandler: EventHandler<EventMap[keyof EventMap]> | undefined;
+
+        const eventBus: EventBus = {
+            publish: (type, _event) => {
+                published.push(type as string);
+            },
+            subscribe,
+            unsubscribe: () => {},
+            addMiddleware: () => {},
+            removeMiddleware: () => {},
+            clearMiddleware: () => {},
+            listMiddleware: () => [],
+        };
+
+        const context: PluginContext = {
+            eventBus,
+            config: {
+                env: 'test',
+                log: { level: 'info' },
+                discord: { token: 'test', clientId: 'test' },
+            } as Config,
+            logger: createLogger('Test'),
+        };
+
+        const router = new CommandRouterPlugin();
+        const executeMock = mock(async () => {});
+
+        router.registerCommand({
+            name: 'ping',
+            description: 'Ping',
+            execute: executeMock,
+        });
+
+        await router.register(context);
+
+        expect(subscribe).toHaveBeenCalledTimes(1);
+        expect(subscribe.mock.calls[0]?.[0]).toBe('MESSAGE_CREATE');
+        expect(registeredHandler).toBeDefined();
+
+        await registeredHandler?.({
+            type: 'MESSAGE_CREATE',
+            timestamp: Date.now(),
+            userId: 'u1',
+            channelId: 'c1',
+            messageId: 'm1',
+            content: '!ping arg',
+            authorName: 'U',
+            authorTag: 'U#1',
+            isBot: false,
+        });
+
+        expect(executeMock).toHaveBeenCalledTimes(1);
+        expect(published).toEqual(['COMMAND_DISPATCH', 'COMMAND_EXECUTE']);
     });
 
     it('should dispatch registered command when matching message is published', async () => {
