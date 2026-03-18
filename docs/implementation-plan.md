@@ -1,254 +1,141 @@
-# AccordJS Implementation Plan
+# AccordJS Implementation Plan (Current State)
 
-Based on the Discord Bot Framework Architecture, here's a phase-by-phase implementation plan for you to follow. Discord.js v14.25.1 (latest stable) will be used.
+This document replaces the older roadmap with an accurate status of what is implemented today and what remains.
 
-## File Naming Convention
+## Scope and Baseline
 
-AccordJS follows **kebab-case for all file names** regardless of content:
-- ✅ `in-memory-event-bus.ts` (contains InMemoryEventBus class)
-- ✅ `discord-client.ts` (contains DiscordClient class)
-- ✅ `create-logger.ts` (contains createLogger function)
-- ❌ `eventBus.ts`, `EventBus.ts`, `createLogger.ts`
+- Architecture baseline: explicit plugin `eventMap` + class-based middleware + typed event pipeline.
+- Backward compatibility and migration path are not required for this architecture because it was not released before these changes.
+- File naming convention remains `kebab-case`.
 
-Content inside files uses appropriate casing: Classes/Interfaces/Types use `PascalCase`, functions/variables use `camelCase`, constants use `UPPER_CASE`.
+## Runtime Flow
 
-## Phase 1: Project Foundation & Dependencies
-**Goal:** Set up core dependencies, basic TypeScript configuration, and foundational Zod schemas
-
-**Files to Create:**
-- `src/types/events.ts` - Core event Zod schemas and type definitions
-- `src/types/plugin.ts` - Plugin interface definitions
-- `src/types/index.ts` - Schema and type exports
-
-**Files to Modify:**
-- `package.json` - Add discord.js@14.25.1, zod@4.x, pino, pino-pretty
-- `src/index.ts` - Basic framework entry point
-
-**Tests to Create:**
-- `tests/unit/types.test.ts` - Schema validation and type tests
-
-**Implementation Notes:**
-- Use Zod schemas for all event definitions, not plain TypeScript types
-- Generate TypeScript types using `z.infer<typeof Schema>`
-- Enables runtime validation for Discord.js event normalization
-- Example: `MessageCreateEventSchema = z.object({ type: z.literal('MESSAGE_CREATE'), ... })`
-
-**Commit Message:** `feat: add core dependencies and foundational Zod schemas`
-
----
-
-## Phase 2: Configuration & Environment Setup
-**Goal:** Environment configuration, bot token management, and configuration validation
-
-**Files to Create:**
-- `src/config.ts` - Consolidated configuration schema and validation with Zod
-- `.env.example` - Environment template for users
-
-**Files to Modify:**
-- `src/index.ts` - Load and validate configuration
-
-**Tests to Create:**
-- `tests/unit/config.test.ts` - Configuration validation tests
-
-**Implementation Notes:**
-- Uses vendored `config-schema` (originally `@axm-internal/config-schema`) for automatic environment variable parsing
-- Package is vendored in `src/vendor/config-schema/` to avoid GitHub Package Registry authentication
-- Will migrate back to npm package when publicly available
-- Single file approach instead of multiple config files for simplicity
-- Comprehensive JSDoc documentation for all configuration options
-- Validates Discord token, client ID, and optional guild ID
-- Supports all Pino log levels with intelligent defaults
-
-**Commit Message:** `feat: add configuration management and environment validation`
-
----
-
-## Phase 3: Typed Event Bus System
-**Goal:** Implement the core event distribution system with full type safety
-
-**Files to Create:**
-- `src/bus/in-memory-event-bus.ts` - In-memory event bus implementation
-- `src/bus/types.ts` - Event bus specific types
-
-**Files to Modify:**
-- `src/types/events.ts` - Add event map schemas and inferred types
-
-**Tests to Create:**
-- `tests/unit/bus/in-memory-event-bus.test.ts` - In-memory event bus functionality tests
-
-**Commit Message:** `feat: implement typed event bus system`
-
----
-
-## Phase 4: Discord Gateway Integration
-**Goal:** Discord client setup, intents configuration, and gateway adapter for event normalization
-
-**Files to Create:**
-- `src/bot/client.ts` - Discord client initialization
-- `src/bot/intents.ts` - Discord intents configuration
-- `src/bot/gateway.ts` - Gateway adapter for event normalization using Zod validation
-- `src/events/normalize-message.ts` - Message event normalization with schema validation
-- `src/events/normalize-member.ts` - Member event normalization with schema validation
-- `src/events/types.ts` - Additional normalized event schemas (if needed)
-
-**Tests to Create:**
-- `tests/unit/bot/client.test.ts` - Client initialization tests
-- `tests/unit/events/normalize-message.test.ts` - Message normalization and schema validation tests
-- `tests/unit/events/normalize-member.test.ts` - Member normalization and schema validation tests
-
-**Commit Message:** `feat: add Discord gateway integration and event normalization`
-
----
-
-## Phase 5: Plugin Architecture Foundation
-**Goal:** Core plugin system allowing registration and lifecycle management
-
-**Files to Create:**
-- `src/plugins/plugin-manager.ts` - Plugin registration and management
-- `src/plugins/base-plugin.ts` - Base plugin abstract class
-- `src/types/plugin-context.ts` - Plugin context definitions
-
-**Files to Modify:**
-- `src/index.ts` - Integrate plugin manager
-
-**Tests to Create:**
-- `tests/unit/plugins/plugin-manager.test.ts` - Plugin management tests
-- `tests/unit/plugins/base-plugin.test.ts` - Base plugin tests
-
-**Commit Message:** `feat: implement plugin architecture foundation`
-
----
-
-## Phase 6: Command Router Plugin
-**Goal:** Centralized command handling with parsing, permissions, and cooldowns
-
-**Files to Create:**
-- `src/plugins/commands/command-router.ts` - Main command routing logic
-- `src/plugins/commands/command-registry.ts` - Command registration system
-- `src/plugins/commands/types.ts` - Command-specific types
-- `src/plugins/commands/parser.ts` - Command argument parsing
-- `src/plugins/commands/index.ts` - Command plugin main export
-
-**Files to Modify:**
-- `src/types/events.ts` - Add command-related events
-
-**Tests to Create:**
-- `tests/unit/plugins/commands/command-router.test.ts`
-- `tests/unit/plugins/commands/parser.test.ts`
-- `tests/unit/plugins/commands/command-registry.test.ts`
-
-**Commit Message:** `feat: add command router plugin with parsing and registration`
-
----
-
-## Phase 7: Logging Plugin
-**Goal:** Structured event logging using Pino with different log levels and formatting
-
-**Files to Create:**
-- `src/plugins/logging/logger.ts` - Pino logger setup
-- `src/plugins/logging/event-logger.ts` - Event-specific logging
-- `src/plugins/logging/index.ts` - Logging plugin main export
-- `src/plugins/logging/types.ts` - Logging configuration types
-
-**Tests to Create:**
-- `tests/unit/plugins/logging/event-logger.test.ts`
-- `tests/unit/plugins/logging/logger.test.ts`
-
-**Commit Message:** `feat: add logging plugin with structured event logging`
-
----
-
-## Phase 8: Framework Integration & Main Entry Point
-**Goal:** Tie all components together into a cohesive framework with proper startup/shutdown
-
-**Files to Create:**
-- `src/framework.ts` - Main framework class orchestrating all components
-- `src/lifecycle.ts` - Startup and shutdown lifecycle management
-
-**Files to Modify:**
-- `src/index.ts` - Complete framework initialization and startup
-
-**Tests to Create:**
-- `tests/unit/framework.test.ts` - Framework integration tests
-- `tests/integration/framework.test.ts` - End-to-end framework tests
-
-**Commit Message:** `feat: integrate all components into cohesive framework`
-
----
-
-## Phase 9: Analytics Plugin
-**Goal:** Event analytics, metrics collection, and basic analytics processing
-
-**Files to Create:**
-- `src/plugins/analytics/metrics-collector.ts` - Metrics collection logic
-- `src/plugins/analytics/event-analyzer.ts` - Event analysis functionality
-- `src/plugins/analytics/types.ts` - Analytics types
-- `src/plugins/analytics/index.ts` - Analytics plugin export
-
-**Tests to Create:**
-- `tests/unit/plugins/analytics/metrics-collector.test.ts`
-- `tests/unit/plugins/analytics/event-analyzer.test.ts`
-
-**Commit Message:** `feat: add analytics plugin for event metrics and analysis`
-
----
-
-## Phase 10: Documentation & Examples
-**Goal:** Usage examples, plugin development guide, and comprehensive documentation
-
-**Files to Create:**
-- `examples/basic-bot/index.ts` - Basic bot example
-- `examples/custom-plugin/index.ts` - Custom plugin example
-- `docs/plugin-development.md` - Plugin development guide
-- `docs/getting-started.md` - Getting started guide
-- `docs/api-reference.md` - API documentation
-
-**Files to Modify:**
-- `README.md` - Add usage examples and links to documentation
-
-**Commit Message:** `docs: add examples and comprehensive documentation`
-
----
-
-## Implementation Notes
-
-### Dependencies to Add
-```bash
-bun add discord.js@^14.25.1 zod@^4.3.6 pino@^10.3.1 pino-pretty@^13.1.3 dotenv@^17.3.1
-bun add -d @types/node@^25.5.0
+```text
+Discord Gateway -> Event Normalization -> Event Bus
+-> Global Middleware -> Plugin Middleware -> Mapped Plugin Handlers
 ```
 
-### Key Architectural Principles
-1. **Discord Client Isolation** - Keep Discord.js objects in gateway layer only
-2. **Event Normalization** - Transform Discord events to internal types
-3. **Type Safety** - Zero `any` usage, strict TypeScript throughout
-4. **Plugin Architecture** - All features as independent, event-driven plugins
+## Status Legend
 
-### Testing Strategy
-- Unit tests for each new file/module
-- Schema validation tests using Zod `.safeParse()` and `.parse()`
-- Integration tests for phase 8 (framework integration)
-- Use Bun's built-in test runner
-- Maintain test coverage as you implement
+- `Completed`: implemented in source and covered by tests.
+- `Partial`: implemented but has known follow-up work.
+- `Not Started`: not implemented.
+- `Deprecated`: removed from active plan.
 
-### Zod Schema Testing Examples
-```typescript
-// Test valid data
-const result = MessageCreateEventSchema.safeParse(validEventData);
-expect(result.success).toBe(true);
+## Phase Status
 
-// Test invalid data
-const badResult = MessageCreateEventSchema.safeParse(invalidData);
-expect(badResult.success).toBe(false);
-expect(badResult.error.issues).toHaveLength(1);
-```
+### Phase 1: Project Foundation and Dependencies
+Status: `Completed`
 
-### Development Tips
-- Follow existing code style (4 spaces, single quotes, semicolons)
-- Run `bun run check` before each commit
-- Use protected visibility over private in classes
-- Prefer explicit types over inference where it aids readability
+Implemented:
+- Zod-based event schemas and inferred types in `src/types/events.ts`.
+- Core type exports in `src/types/index.ts`.
+- Foundation tests in `tests/unit/types.test.ts`.
 
-**Total Phases:** 10
-**Estimated Timeline:** Each phase represents 1-3 days of focused development
-**Dependencies:** Each phase builds on previous ones - implement sequentially
+### Phase 2: Configuration and Environment Setup
+Status: `Completed`
+
+Implemented:
+- Consolidated config schema in `src/config.ts`.
+- Vendored config-schema integration in `src/vendor/config-schema/`.
+- Environment template in `.env.example`.
+- Config tests in `tests/unit/config.test.ts`.
+
+Notes:
+- Global middleware configuration is now part of config and loaded at startup.
+
+### Phase 3: Typed Event Bus System
+Status: `Completed`
+
+Implemented:
+- Event bus interface and in-memory implementation in `src/bus/types.ts` and `src/bus/in-memory-event-bus.ts`.
+- Global middleware registration/removal/listing on the event bus.
+- Unit and integration coverage in `tests/unit/bus/in-memory-event-bus.test.ts` and `tests/integration/middleware.integration.test.ts`.
+
+### Phase 4: Discord Gateway Integration
+Status: `Completed`
+
+Implemented:
+- Discord client and intents in `src/bot/client.ts` and `src/bot/intents.ts`.
+- Gateway adapter in `src/bot/gateway.ts`.
+- Normalizers in `src/events/normalize-message.ts` and `src/events/normalize-member.ts`.
+- Tests in `tests/unit/bot/client.test.ts`, `tests/unit/events/normalize-message.test.ts`, and `tests/unit/events/normalize-member.test.ts`.
+
+### Phase 5: Plugin Architecture Foundation
+Status: `Completed`
+
+Implemented:
+- Base plugin, plugin manager, and plugin context in `src/plugins/base-plugin.ts`, `src/plugins/plugin-manager.ts`, and `src/types/plugin-context.ts`.
+- Explicit event mapping and handler validation in `src/plugins/event-mapper.ts` and `src/plugins/handler-registry.ts`.
+- Plugin middleware manager in `src/plugins/plugin-middleware-manager.ts`.
+- Tests in `tests/unit/plugins/base-plugin.test.ts`, `tests/unit/plugins/plugin-manager.test.ts`, `tests/unit/plugins/event-mapper.test.ts`, `tests/unit/plugins/explicit-mapping.test.ts`, and `tests/unit/plugins/plugin-middleware.test.ts`.
+
+### Phase 6: Command Router Plugin
+Status: `Completed`
+
+Implemented:
+- Command router, parser, registry, and types in `src/plugins/commands/`.
+- Command lifecycle event support in `src/types/events.ts`.
+- Tests in `tests/unit/plugins/commands/command-router.test.ts`, `tests/unit/plugins/commands/parser.test.ts`, and `tests/unit/plugins/commands/command-registry.test.ts`.
+
+### Phase 7: Middleware and Pipeline Architecture
+Status: `Completed`
+
+Implemented:
+- Middleware primitives in `src/middleware/types.ts`, `src/middleware/base-middleware.ts`, and `src/middleware/middleware-runner.ts`.
+- Pipeline context/execution in `src/pipeline/pipeline-context.ts` and `src/pipeline/event-pipeline.ts`.
+- Built-in middleware in `src/middleware/built-in/`.
+- Config-driven global middleware loading in `src/middleware/config-loader.ts` and startup wiring in `src/main.ts`.
+- Coverage in `tests/unit/middleware/`, `tests/unit/pipeline/event-pipeline.test.ts`, and `tests/integration/pipeline/full-pipeline.test.ts`.
+
+### Phase 8: Documentation and Examples
+Status: `Partial`
+
+Implemented:
+- Plugin architecture plan in `docs/new-plugin-architecture.md`.
+- Plugin development guide in `docs/plugin-development.md`.
+- Example plugin in `examples/eventmap-middleware-plugin.ts`.
+
+Remaining:
+- Add `docs/getting-started.md`.
+- Add `docs/api-reference.md`.
+- Expand example catalog beyond a single plugin example.
+
+### Phase 9: Logging Plugin (Old Plan)
+Status: `Deprecated`
+
+Reason:
+- Logging is now handled through `createLogger` and `LoggerMiddleware` in the middleware layer.
+- A separate logging plugin is no longer part of the target architecture.
+
+### Phase 10: Framework Wrapper Class and Lifecycle Files (Old Plan)
+Status: `Deprecated`
+
+Reason:
+- Current architecture uses `src/main.ts` bootstrap + `PluginManager` + `InMemoryEventBus`.
+- `src/framework.ts` and `src/lifecycle.ts` are not required by the current design.
+
+### Phase 11: Analytics Plugin
+Status: `Not Started`
+
+Notes:
+- Basic metrics exist via `MetricsMiddleware`.
+- A dedicated analytics plugin remains optional backlog work.
+
+## Current Gaps (Priority Ordered)
+
+1. Add focused tests for config-driven middleware loading behavior (`src/middleware/config-loader.ts`).
+2. Add startup integration coverage for global middleware wiring in `src/main.ts`.
+3. Publish missing docs (`docs/getting-started.md`, `docs/api-reference.md`).
+4. Expand examples to include command router + global middleware configuration together.
+
+## Out of Scope
+
+- Legacy plugin migration tooling.
+- Backward compatibility support for pre-eventMap plugin styles.
+
+## Quality Gates
+
+- `bun check` must pass before merge.
+- `bun test` must pass before merge.
+- New framework behavior must include unit and/or integration coverage in `tests/unit/` or `tests/integration/`.
