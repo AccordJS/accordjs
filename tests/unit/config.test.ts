@@ -1,6 +1,39 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { ConfigSchema, createConfig, LogLevelEnumSchema, NodeEnvEnumSchema } from '@app/config';
 
+const defaultMiddleware = {
+    global: {
+        botFilter: { enabled: true },
+        rateLimiter: {
+            enabled: false,
+            windowMs: 60000,
+            maxEvents: 10,
+            block: true,
+            key: 'userId',
+            pruneIntervalMs: undefined,
+        },
+        profanityFilter: {
+            enabled: false,
+            bannedWords: [],
+            action: 'flag',
+            replacement: '***',
+            caseSensitive: false,
+            matchWholeWord: true,
+        },
+        logger: {
+            enabled: false,
+            logLevel: 'info',
+            includeContent: false,
+            sensitiveFields: [],
+        },
+        metrics: {
+            enabled: false,
+            trackCounts: true,
+            trackPerformance: false,
+        },
+    },
+};
+
 describe('Configuration Schema Validation', () => {
     let originalEnv: Record<string, string | undefined>;
 
@@ -88,6 +121,7 @@ describe('Configuration Schema Validation', () => {
                     clientId: 'valid_client_id',
                     guildId: 'optional_guild_id',
                 },
+                middleware: defaultMiddleware,
             };
 
             const result = ConfigSchema.safeParse(mockConfig);
@@ -112,6 +146,7 @@ describe('Configuration Schema Validation', () => {
                     token: 'valid_discord_token',
                     clientId: 'valid_client_id',
                 },
+                middleware: defaultMiddleware,
             };
 
             const result = ConfigSchema.safeParse(mockConfig);
@@ -132,6 +167,7 @@ describe('Configuration Schema Validation', () => {
                     token: '',
                     clientId: 'valid_client_id',
                 },
+                middleware: defaultMiddleware,
             };
 
             const result = ConfigSchema.safeParse(mockConfig);
@@ -159,6 +195,7 @@ describe('Configuration Schema Validation', () => {
                     token: 'valid_discord_token',
                     clientId: '',
                 },
+                middleware: defaultMiddleware,
             };
 
             const result = ConfigSchema.safeParse(mockConfig);
@@ -186,6 +223,7 @@ describe('Configuration Schema Validation', () => {
                     token: 'valid_discord_token',
                     clientId: 'valid_client_id',
                 },
+                middleware: defaultMiddleware,
             };
 
             const result = ConfigSchema.safeParse(mockConfig);
@@ -202,6 +240,7 @@ describe('Configuration Schema Validation', () => {
                     token: 'valid_discord_token',
                     clientId: 'valid_client_id',
                 },
+                middleware: defaultMiddleware,
             };
 
             const result = ConfigSchema.safeParse(mockConfig);
@@ -218,6 +257,7 @@ describe('Configuration Schema Validation', () => {
                     token: '', // Missing required field
                     clientId: '', // Missing required field
                 },
+                middleware: defaultMiddleware,
             };
 
             const result = ConfigSchema.safeParse(mockConfig);
@@ -289,6 +329,7 @@ describe('Configuration Schema Validation', () => {
                     clientId: 'test_client_id',
                     guildId: 'test_guild_id',
                 },
+                middleware: defaultMiddleware,
             };
 
             const result = ConfigSchema.safeParse(mockConfig);
