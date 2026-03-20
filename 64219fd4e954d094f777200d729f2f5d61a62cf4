@@ -1,0 +1,54 @@
+AGENTS.md
+  54aeeddd6fc0f59b 1-25
+tests/unit/bot/gateway.test.ts
+  54aeeddd6fc0f59b 1-148
+tests/unit/config.test.ts
+  54aeeddd6fc0f59b 3,38-44,133,145,159,166,181,199,209,213,216,231,249,266,281-305,307-328,343-345,368,371-380,396,407,413
+src/types/debug.ts
+  54aeeddd6fc0f59b 1-39
+examples/main.ts
+  54aeeddd6fc0f59b 43-45
+src/config.ts
+  54aeeddd6fc0f59b 15,62-82,119-124,161-167,186,193-195,205-207
+src/bot/gateway.ts
+  54aeeddd6fc0f59b 2,5,7-8,10-30,41-42,48,51-55,62-63,82-234
+src/types/index.ts
+  54aeeddd6fc0f59b 5
+README.md
+  54aeeddd6fc0f59b 16,49,51-59,87-88,164-168
+tests/unit/middleware/config-loader.test.ts
+  54aeeddd6fc0f59b 2,17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.15",
+  "base_commit_sha": "64219fd4e954d094f777200d729f2f5d61a62cf4",
+  "prompts": {
+    "54aeeddd6fc0f59b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d07ed-aa21-79a3-8fb3-a1168c9f14ce",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Angel S. Moreno <angelxmoreno@gmail.com>",
+      "messages": [],
+      "total_additions": 1462,
+      "total_deletions": 108,
+      "accepted_lines": 1390,
+      "overriden_lines": 0
+    },
+    "bda0d5a3620814b0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019cfa61-2c09-7d13-bd3e-0096b44387fe",
+        "model": "gpt-5.1-codex-max"
+      },
+      "human_author": "Angel S. Moreno <angelxmoreno@gmail.com>",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 0,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    }
+  }
+}
