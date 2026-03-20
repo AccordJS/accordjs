@@ -1,14 +1,17 @@
 # Getting Started
 
-This guide shows how to bootstrap AccordJS with your own entrypoint.
-
-`examples/main.ts` in this repository is an internal example bootstrap. If you consume AccordJS as a module, you should define your own startup file and register your own plugins there.
+This guide assumes you already created a Discord bot application in the Discord Developer Portal and have a bot token for local development.
 
 ## Prerequisites
 
 - Bun 1.x
-- Node-compatible runtime environment
-- A Discord bot token and client ID
+- A local `.env` file with at least:
+
+```bash
+NODE_ENV=development
+LOG_LEVEL=info
+DISCORD_TOKEN=your_bot_token
+```
 
 ## Install
 
@@ -22,78 +25,50 @@ If you are working in this repository directly:
 bun install
 ```
 
-## Configure Environment
+## Compose Your App Explicitly
 
-Create `.env` from `.env.example` and set at least:
+AccordJS now prefers explicit bootstrap code over config-driven middleware loading. You choose:
 
-```bash
-NODE_ENV=development
-LOG_LEVEL=info
-DISCORD_TOKEN=your_bot_token
-DISCORD_CLIENT_ID=your_client_id
-```
-
-Optional middleware environment variables are documented in `.env.example`.
-
-## Create a Plugin
+- which `gateway events` to listen to from Discord.js
+- which global middleware to attach
+- which plugins to register
+- which Accord events each plugin handler should receive
 
 ```typescript
-import { BasePlugin, type MessageCreateEvent } from 'accordjs';
-
-export class PingPlugin extends BasePlugin {
-    public readonly name = 'PingPlugin';
-
-    protected override readonly eventMap = {
-        onPingMessage: 'MESSAGE_CREATE',
-    } as const;
-
-    public async onPingMessage(event: MessageCreateEvent): Promise<void> {
-        if (event.content.trim() === '!ping') {
-            this.context?.logger.info(`Ping command from ${event.userId}`);
-        }
-    }
-}
-```
-
-## Bootstrap Your App
-
-```typescript
-import { createDiscordClient, GatewayAdapter, InMemoryEventBus } from 'accordjs';
-import { createConfig } from 'accordjs';
-import { PluginManager } from 'accordjs';
-import { PingPlugin } from './plugins/ping-plugin';
+import { BotFilterMiddleware, CommandRouterPlugin, createAccordApp, createConfig, InMemoryCommandRegistry } from 'accordjs';
 
 const config = createConfig();
-const eventBus = new InMemoryEventBus();
-
-const pluginManager = new PluginManager(eventBus, config);
-await pluginManager.register(new PingPlugin());
-
-const client = createDiscordClient();
-const gateway = new GatewayAdapter(client, eventBus);
-gateway.registerListeners();
-
-await client.login(config.discord.token);
-```
-
-## Use Command Router
-
-```typescript
-import { CommandRouterPlugin, InMemoryCommandRegistry, type Command } from 'accordjs';
-
 const registry = new InMemoryCommandRegistry();
 
-const pingCommand: Command = {
-    name: 'ping',
-    description: 'Simple ping command',
-    async execute(context) {
-        context.logger.info(`Ping from ${context.userId}`);
-    },
-};
+const app = await createAccordApp({
+    config,
+    middleware: [new BotFilterMiddleware()],
+    gatewayEvents: ['messageCreate', 'guildMemberAdd', 'guildMemberRemove'],
+    plugins: [
+        {
+            plugin: new CommandRouterPlugin(registry, '!'),
+            handlerBindings: {
+                onMessageCreate: 'MESSAGE_CREATE',
+            },
+        },
+    ],
+});
 
-registry.register(pingCommand);
-await pluginManager.register(new CommandRouterPlugin(registry, '!'));
+await app.start();
 ```
+
+## Gateway Events vs Accord Events
+
+- `gateway events` are Discord.js client events such as `guildMemberRemove`
+- `Accord events` are normalized framework events such as `MEMBER_LEAVE`
+
+See `docs/event-model.md` for the canonical mapping table and the currently unsupported gaps.
+
+## Middleware and Plugins
+
+- Global middleware is app-owned and passed directly to `createAccordApp()`
+- Plugin-scoped middleware stays plugin-owned via `BasePlugin.addMiddleware()`
+- Handler bindings can be supplied by app bootstrap code when you do not want plugins to own the event map
 
 ## Verify Setup
 
@@ -104,6 +79,6 @@ bun run check
 
 ## Next Steps
 
-- Read `docs/plugin-development.md` for eventMap and middleware patterns.
-- See `examples/eventmap-middleware-plugin.ts` for a focused plugin example.
-- Use `docs/api-reference.md` for exported symbols and signatures.
+- Read `docs/event-model.md` to understand current gateway coverage
+- Read `docs/plugin-development.md` for plugin and middleware patterns
+- Read `docs/community-bot-tutorial-spec.md` for the planned end-to-end tutorial direction

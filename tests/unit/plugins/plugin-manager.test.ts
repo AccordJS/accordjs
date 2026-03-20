@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import type { EventBus } from '@app/bus/types';
 import type { Config } from '@app/config';
 import { PluginManager } from '@app/plugins/plugin-manager';
-import type { Plugin, PluginContext } from '@app/types/index';
+import type { EventHandlerMap, Plugin, PluginContext } from '@app/types/index';
 
 class TestPlugin implements Plugin {
     public readonly name: string;
@@ -72,5 +72,17 @@ describe('PluginManager', () => {
         };
 
         await expect(manager.register(failingPlugin)).rejects.toThrow('Registration failed');
+    });
+
+    it('should inject explicit handler bindings when provided', async () => {
+        const manager = new PluginManager(mockBus, mockConfig);
+        const plugin = new TestPlugin('bound-plugin');
+        const handlerBindings: EventHandlerMap = {
+            handleLeave: 'MEMBER_LEAVE',
+        };
+
+        await manager.register(plugin, { handlerBindings });
+
+        expect(plugin.context?.handlerBindings).toEqual(handlerBindings);
     });
 });

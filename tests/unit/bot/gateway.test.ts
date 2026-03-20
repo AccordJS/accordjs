@@ -53,6 +53,7 @@ describe('GatewayAdapter', () => {
         expect(disabledClient.handlers.has('guildCreate')).toBe(false);
         expect(disabledClient.handlers.has('messageCreate')).toBe(true);
         expect(disabledClient.handlers.has('guildMemberAdd')).toBe(true);
+        expect(disabledClient.handlers.has('guildMemberRemove')).toBe(true);
 
         const enabledClient = createClientStub();
         const enabledAdapter = new GatewayAdapter(enabledClient.client as never, createEventBusStub(), {
@@ -163,6 +164,44 @@ describe('GatewayAdapter', () => {
                 userId: 'user-1',
                 channelId: 'channel-1',
                 serverId: 'guild-1',
+            })
+        );
+    });
+
+    it('publishes MEMBER_LEAVE when guildMemberRemove is enabled', () => {
+        const { client, handlers } = createClientStub();
+        const eventBus = createEventBusStub();
+        const adapter = new GatewayAdapter(client as never, eventBus, {
+            gatewayEvents: ['guildMemberRemove'],
+            logger: createLoggerStub(),
+        });
+
+        adapter.registerListeners();
+
+        expect(handlers.has('messageCreate')).toBe(false);
+        expect(handlers.has('guildMemberAdd')).toBe(false);
+        expect(handlers.has('guildMemberRemove')).toBe(true);
+
+        const memberRemoveHandler = handlers.get('guildMemberRemove')?.[0];
+        expect(memberRemoveHandler).toBeDefined();
+
+        memberRemoveHandler?.({
+            id: 'user-2',
+            guild: {
+                id: 'guild-9',
+            },
+            user: {
+                username: 'Bob',
+            },
+        });
+
+        expect(eventBus.publish).toHaveBeenCalledWith(
+            'MEMBER_LEAVE',
+            expect.objectContaining({
+                type: 'MEMBER_LEAVE',
+                userId: 'user-2',
+                serverId: 'guild-9',
+                username: 'Bob',
             })
         );
     });

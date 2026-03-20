@@ -7,13 +7,37 @@ This reference covers the current module API surface exported by the AccordJS ro
 ```typescript
 import {
     BasePlugin,
-    PluginManager,
-    InMemoryEventBus,
-    GatewayAdapter,
-    createDiscordClient,
+    BotFilterMiddleware,
+    CommandRouterPlugin,
+    createAccordApp,
     createConfig,
 } from 'accordjs';
 ```
+
+## App Bootstrap
+
+### `createAccordApp(options?: AccordAppOptions): Promise<AccordApp>`
+Creates the Discord client, event bus, gateway, plugin manager, registers middleware/plugins, wires selected gateway events, and returns runtime handles.
+
+### `startAccordApp(options?: AccordAppOptions): Promise<AccordApp>`
+Equivalent to `createAccordApp()` followed by `await app.start()`.
+
+`AccordAppOptions` supports:
+- `config?: Config`
+- `intents?: readonly number[]`
+- `gatewayEvents?: readonly GatewayEvent[]`
+- `debug?: DiscordClientDebugConfig`
+- `middleware?: AnyEventMiddleware[]`
+- `plugins?: PluginRegistration[]`
+
+`AccordApp` returns:
+- `client`
+- `config`
+- `eventBus`
+- `gateway`
+- `pluginManager`
+- `start(): Promise<string>`
+- `stop(): Promise<void>`
 
 ## Configuration
 
@@ -33,9 +57,9 @@ Allowed values: `'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace'`.
 Allowed values: `'userId' | 'channelId' | 'serverId' | 'eventType' | 'global'`.
 
 ### `DEFAULT_MIDDLEWARE_CONFIG`
-Default global middleware configuration object.
+Legacy default global middleware configuration object for the config-loader helper.
 
-### `Config` and `MiddlewareConfig`
+### `Config`, `MiddlewareConfig`, `DebugConfig`
 Inferred TypeScript types from the configuration schema.
 
 ## Discord Gateway Layer
@@ -51,11 +75,14 @@ Bridges Discord.js gateway events to the internal event bus.
 
 Constructor:
 ```typescript
-new GatewayAdapter(client: Client, eventBus: EventBus)
+new GatewayAdapter(client: Client, eventBus: EventBus, options?: GatewayAdapterOptions)
 ```
 
 Methods:
 - `registerListeners(): void`
+
+### `GatewayEventSchema`, `GatewayEvent`, `DEFAULT_GATEWAY_EVENTS`
+Typed gateway event names supported by AccordJS normalization today.
 
 ## Event Bus
 
@@ -90,6 +117,7 @@ Properties:
 - `eventBus: EventBus`
 - `config: Config`
 - `logger: Logger`
+- `handlerBindings?: EventHandlerMap`
 
 ### `BasePlugin`
 Base class for plugins with event mapping support.
@@ -109,8 +137,8 @@ new PluginManager(eventBus: EventBus, config: Config)
 ```
 
 Methods:
-- `register(plugin: Plugin): Promise<void>`
-- `registerAll(plugins: Plugin[]): Promise<void>`
+- `register(plugin: Plugin, options?: PluginRegistrationOptions): Promise<void>`
+- `registerAll(plugins: Array<Plugin | { plugin: Plugin; options?: PluginRegistrationOptions }>): Promise<void>`
 - `getPlugins(): string[]`
 
 ## Command Plugin APIs
@@ -158,13 +186,20 @@ Methods:
 Converts Discord.js `Message` objects into validated internal events.
 
 ### `normalizeMember(member: GuildMember): MemberJoinEvent`
-Converts Discord.js `GuildMember` objects into validated internal member join events.
+Alias for `normalizeMemberJoin()`.
+
+### `normalizeMemberJoin(member: GuildMember): MemberJoinEvent`
+Converts Discord.js `guildMemberAdd` payloads into validated internal member join events.
+
+### `normalizeMemberLeave(member: GuildMember | PartialGuildMember): MemberLeaveEvent`
+Converts Discord.js `guildMemberRemove` payloads into validated internal member leave events.
 
 ## Event Schemas and Types
 
 Exported event schemas/types include:
 - `EventTypeSchema`, `EventType`
 - `EventHandlerMap`
+- `GatewayEventSchema`, `GatewayEvent`
 - `BaseEventSchema`, `BaseEvent`
 - `DiscordEventSchema`, `DiscordEvent`
 - `ChannelEventSchema`, `ChannelEvent`
@@ -189,6 +224,7 @@ Creates a Pino logger namespaced with the provided component name.
 These symbols are exported from the package barrel for advanced use (no `@app/` paths needed):
 - Middleware primitives: `BaseMiddleware`, `EventMiddleware`, `MiddlewareNext`, `MiddlewareHandler`, `MiddlewareLogger`, `runMiddlewareChain`
 - Built-in middleware classes: `BotFilterMiddleware`, `RateLimiterMiddleware`, `ProfanityFilterMiddleware`, `LoggerMiddleware`, `MetricsMiddleware`
-- Config loader: `loadGlobalMiddleware`
 - Pipeline helpers: `runEventPipeline`, `PipelineContext`, `PipelineTraceEntry`, `PipelineStage`
 - Plugin wiring helpers: `registerMappedHandlers`, `HandlerRegistry`, `PluginMiddlewareManager`
+
+`loadGlobalMiddleware` remains available by direct module path for advanced or legacy use, but explicit app composition via `createAccordApp()` is now the primary path.

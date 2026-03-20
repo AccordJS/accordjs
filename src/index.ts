@@ -1,9 +1,11 @@
 /**
  * AccordJS - A clean, extensible Discord bot framework in TypeScript
  *
- * This is a pure re-export barrel file. Consumers provide their own bootstrap.
+ * Public exports for AccordJS, including the explicit app bootstrap API.
  */
 
+// App Bootstrap
+export * from '@app/app/bootstrap';
 // Bot Components
 export * from '@app/bot/client';
 export * from '@app/bot/gateway';
@@ -18,8 +20,7 @@ export * from '@app/events/normalize-message';
 // Middleware (public + advanced)
 export * from '@app/middleware/base-middleware';
 export * from '@app/middleware/built-in';
-// Internal helpers exposed for advanced use
-export * from '@app/middleware/config-loader';
+// Advanced helpers
 export * from '@app/middleware/middleware-runner';
 export * from '@app/middleware/types';
 export * from '@app/pipeline/event-pipeline';

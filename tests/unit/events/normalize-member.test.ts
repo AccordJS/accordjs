@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import { normalizeMember } from '@app/events/normalize-member';
-import type { Guild, GuildMember, User } from 'discord.js';
+import { normalizeMember, normalizeMemberLeave } from '@app/events/normalize-member';
+import type { Guild, GuildMember, PartialGuildMember, User } from 'discord.js';
 import { ZodError } from 'zod';
 
 describe('Member Join Normalization', () => {
@@ -79,5 +79,41 @@ describe('Member Join Normalization', () => {
         } as unknown as GuildMember;
 
         expect(() => normalizeMember(mockMember)).toThrow(ZodError);
+    });
+});
+
+describe('Member Leave Normalization', () => {
+    it('should correctly normalize a member leave event', () => {
+        const mockMember = {
+            id: 'user-789',
+            guild: {
+                id: 'guild-456',
+            },
+            user: {
+                username: 'departing-member',
+            },
+        } as unknown as GuildMember;
+
+        const normalized = normalizeMemberLeave(mockMember);
+
+        expect(normalized.type).toBe('MEMBER_LEAVE');
+        expect(normalized.userId).toBe('user-789');
+        expect(normalized.serverId).toBe('guild-456');
+        expect(normalized.username).toBe('departing-member');
+        expect(typeof normalized.leftAt).toBe('number');
+    });
+
+    it('should fall back to unknown when partial member lacks username', () => {
+        const mockMember = {
+            id: 'user-789',
+            guild: {
+                id: 'guild-456',
+            },
+            user: undefined,
+        } as unknown as PartialGuildMember;
+
+        const normalized = normalizeMemberLeave(mockMember);
+
+        expect(normalized.username).toBe('unknown');
     });
 });

@@ -1,6 +1,6 @@
 # Plugin Development Guide
 
-This guide will walk you through developing plugins for the AccordJS Discord bot framework. Plugins use explicit event mapping and class-based middleware for clean, type-safe, and performant event handling.
+This guide will walk you through developing plugins for the AccordJS Discord bot framework. Plugins use class-based middleware and typed handlers, while application bootstrap code now owns the primary composition story.
 
 ## Table of Contents
 
@@ -18,7 +18,8 @@ This guide will walk you through developing plugins for the AccordJS Discord bot
 
 AccordJS uses a plugin-based architecture where features are implemented as independent plugins that communicate through a typed event bus. The new architecture emphasizes:
 
-- **Explicit Event Mapping**: Clear `eventMap` configuration instead of manual subscriptions
+- **Explicit App Composition**: Applications choose gateway events, global middleware, plugins, and optional handler bindings in bootstrap code
+- **Explicit Event Mapping**: Plugin-owned `eventMap` is still supported, but it is no longer the only composition path
 - **Class-Based Middleware**: Reusable middleware classes for event processing
 - **Semantic Method Names**: Use meaningful method names like `moderateMessage` instead of generic handlers
 - **Type Safety**: Full TypeScript support with zero `any` usage
@@ -27,13 +28,13 @@ AccordJS uses a plugin-based architecture where features are implemented as inde
 ### Core Flow
 
 ```
-Discord Gateway → Event Normalization → Global Middleware → Plugin Event Mapping → Plugin Middleware → Plugin Handlers
+Gateway Event → Accord Event Normalization → Global Middleware → Plugin Handler Binding → Plugin Middleware → Plugin Handlers
 ```
 
 1. **Discord Gateway**: Raw Discord.js events are isolated here
 2. **Event Normalization**: Discord events are transformed into internal types using Zod schemas
-3. **Global Middleware**: Framework-level middleware (rate limiting, logging, etc.)
-4. **Plugin Event Mapping**: Plugins declare which methods handle which events
+3. **Global Middleware**: App-owned middleware attached during bootstrap
+4. **Plugin Handler Binding**: Either app bootstrap or plugin-owned `eventMap` decides which methods receive which Accord events
 5. **Plugin Middleware**: Plugin-specific middleware classes
 6. **Plugin Handlers**: Your business logic methods
 
@@ -65,6 +66,8 @@ src/plugins/your-plugin/
 ## Event Mapping System
 
 ### The EventMap Concept
+
+`eventMap` is now one supported wiring mechanism, not the only one. If an app uses `createAccordApp()` with explicit `handlerBindings`, the app can own the handler-to-Accord-event mapping instead.
 
 Instead of manually subscribing to events, plugins declare an `eventMap` that maps method names to event types:
 

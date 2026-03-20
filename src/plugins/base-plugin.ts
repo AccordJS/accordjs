@@ -61,10 +61,11 @@ export abstract class BasePlugin implements Plugin {
     public async register(ctx: PluginContext): Promise<void> {
         this.context = ctx;
         await this.onRegister();
-        registerMappedHandlers(this, ctx.eventBus, this.eventMap, {
+        const handlerBindings = ctx.handlerBindings ?? this.eventMap;
+        registerMappedHandlers(this, ctx.eventBus, handlerBindings, {
             logger: ctx.logger,
             getMiddleware: () => this.middlewareManager.list(),
-            suppressMissingHandlers: this.eventMap === BasePlugin.defaultEventMap,
+            suppressMissingHandlers: handlerBindings === BasePlugin.defaultEventMap,
         });
         this.context.logger.info(`Plugin '${this.name}' registered successfully.`);
     }
