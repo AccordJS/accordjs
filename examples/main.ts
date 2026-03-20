@@ -40,7 +40,9 @@ try {
     logger.info('Discord client created.');
 
     // 5. Initialize Gateway Adapter
-    const gateway = new GatewayAdapter(client, eventBus);
+    const gateway = new GatewayAdapter(client, eventBus, {
+        debug: config.debug.discordClientEvents,
+    });
     gateway.registerListeners();
     logger.info('Gateway listeners registered.');
 

@@ -13,6 +13,7 @@
 - 🤖 **Event-Driven Architecture**: Discord gateway isolation with normalized event processing
 - 🔌 **Plugin System**: Extensible plugin architecture for modular feature development
 - 📡 **Typed Event Bus**: Fully typed event distribution system with compile-time safety
+- 🛠️ **Gateway Debug Capture**: Optional structured logging for selected Discord.js client events such as `guildCreate`
 - ⚡ **Command Router**: Centralized command handling with permission checks and safe cooldowns (supports any duration)
 - 🛡️ **Type Safety**: Zero `any` usage with strict TypeScript configuration and Zod runtime validation
 - 📊 **Analytics Ready**: Built-in support for event logging and analytics processing
@@ -45,7 +46,17 @@
    bun install
    ```
 
-3. **Start developing**:
+3. **Configure your environment**:
+   ```bash
+   DISCORD_TOKEN=your_bot_token
+   # Optional: useful for install URLs or command registration
+   DISCORD_CLIENT_ID=your_application_id
+   # Optional: enable structured Discord client event debug logs
+   DEBUG_DISCORD_CLIENT_EVENTS_ENABLED=true
+   DEBUG_DISCORD_CLIENT_EVENTS_EVENTS=guildCreate,messageCreate,debug
+   ```
+
+4. **Start developing**:
    ```bash
    bun run dev
    ```
@@ -72,6 +83,8 @@ The Discord client exists only in the gateway layer, preventing Discord-specific
 
 ### 2. Event Normalization
 Discord events are transformed into internal event types using Zod schemas for framework independence and runtime validation.
+
+When needed, the gateway can also emit structured debug logs for selected raw Discord.js client events before normalization.
 
 ### 3. Typed Event Bus
 A fully typed event distribution system ensures compile-time safety and eliminates runtime errors.
@@ -147,6 +160,12 @@ bun test --coverage
 # Run tests in watch mode
 bun test --watch
 ```
+
+## Configuration Notes
+
+- `DISCORD_TOKEN` is required for bot login.
+- `DISCORD_CLIENT_ID` is optional. It is not used for gateway login, but it can be useful for install links and other application-level tooling.
+- Discord OAuth client secrets are not required for the bot runtime. They are only needed for OAuth2 flows such as "Log in with Discord" on a dashboard.
 
 ## Building
 

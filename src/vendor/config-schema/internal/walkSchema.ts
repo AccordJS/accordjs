@@ -57,7 +57,7 @@ function walkObject(schema: ZodObject, path: string[], optional: boolean): Inter
  * @internal
  */
 function walkNode(schema: ZodType, path: string[]): InternalNode {
-    const { base, optional } = unwrap(schema);
+    const { base, optional, env } = unwrap(schema);
 
     if (base instanceof ZodObject) {
         return walkObject(base, path, optional);
@@ -69,7 +69,7 @@ function walkNode(schema: ZodType, path: string[]): InternalNode {
         kind: 'leaf',
         path,
         schema: base,
-        env: meta?.env,
+        env: env ?? meta?.env,
         optional,
     };
 }
@@ -85,31 +85,36 @@ function walkNode(schema: ZodType, path: string[]): InternalNode {
  */
 function unwrap(schema: ZodType): {
     base: ZodType;
+    env?: string;
     optional: boolean;
 } {
     let current = schema;
     let optional = false;
+    let env = getSchemaMeta<SchemaMeta>(current).env;
 
     while (true) {
         if (current instanceof ZodOptional) {
             optional = true;
             current = (current as ZodOptional<ZodType>).def.innerType;
+            env ??= getSchemaMeta<SchemaMeta>(current).env;
             continue;
         }
 
         if (current instanceof ZodDefault) {
             current = (current as ZodDefault<ZodType>).def.innerType;
+            env ??= getSchemaMeta<SchemaMeta>(current).env;
             continue;
         }
 
         if (current instanceof z.ZodPipe) {
             const { def } = current as z.ZodPipe;
             current = def.in as unknown as ZodType;
+            env ??= getSchemaMeta<SchemaMeta>(current).env;
             continue;
         }
 
         break;
     }
 
-    return { base: current, optional };
+    return { base: current, env, optional };
 }

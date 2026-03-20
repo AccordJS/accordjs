@@ -12,6 +12,7 @@
  */
 
 import { z } from 'zod';
+import { DEFAULT_DISCORD_CLIENT_DEBUG_EVENTS, DiscordClientDebugEventSchema } from './types/debug';
 import { autoEnv, defineConfig, env } from './vendor/config-schema';
 
 /**
@@ -58,6 +59,27 @@ const stringListSchema = z.preprocess((value) => {
 }, z.array(z.string()).default([]));
 
 const commaListEnv = () => autoEnv(stringListSchema);
+const discordClientDebugEventsEnv = () =>
+    autoEnv(
+        z.preprocess((value) => {
+            if (value === undefined) {
+                return [...DEFAULT_DISCORD_CLIENT_DEBUG_EVENTS];
+            }
+            if (Array.isArray(value)) {
+                return value;
+            }
+            if (typeof value === 'string') {
+                if (value.trim() === '') {
+                    return [...DEFAULT_DISCORD_CLIENT_DEBUG_EVENTS];
+                }
+                return value
+                    .split(',')
+                    .map((item) => item.trim())
+                    .filter(Boolean);
+            }
+            return value;
+        }, z.array(DiscordClientDebugEventSchema))
+    );
 
 export const RateLimitKeySchema = z.enum(['userId', 'channelId', 'serverId', 'eventType', 'global']);
 
@@ -94,6 +116,13 @@ const DefaultMiddlewareConfig = {
     },
 } as const;
 
+const DefaultDebugConfig = {
+    discordClientEvents: {
+        enabled: false,
+        events: [...DEFAULT_DISCORD_CLIENT_DEBUG_EVENTS],
+    },
+};
+
 const MiddlewareConfigSchema = z.object({
     global: z.object({
         botFilter: z.object({
@@ -129,6 +158,13 @@ const MiddlewareConfigSchema = z.object({
     }),
 });
 
+const DebugConfigSchema = z.object({
+    discordClientEvents: z.object({
+        enabled: env('DEBUG_DISCORD_CLIENT_EVENTS_ENABLED', BooleanSchema.default(false)),
+        events: env('DEBUG_DISCORD_CLIENT_EVENTS_EVENTS', discordClientDebugEventsEnv()),
+    }),
+});
+
 /**
  * Complete configuration schema for AccordJS framework
  */
@@ -147,13 +183,16 @@ export const ConfigSchema = z.object({
         /** Discord bot token (maps to DISCORD_TOKEN env var) */
         token: autoEnv(z.string().min(1, 'Discord token is required')),
         /** Discord application/client ID (maps to DISCORD_CLIENT_ID env var) */
-        clientId: autoEnv(z.string().min(1, 'Discord client ID is required')),
+        clientId: autoEnv(z.string().min(1, 'Discord client ID is required').optional()),
         /** Optional guild ID for development/testing (maps to DISCORD_GUILD_ID env var) */
         guildId: autoEnv(z.string().optional()),
     }),
 
     /** Global middleware configuration */
     middleware: MiddlewareConfigSchema.default(DefaultMiddlewareConfig),
+
+    /** Debugging configuration */
+    debug: DebugConfigSchema.default(DefaultDebugConfig),
 });
 
 /**
@@ -163,6 +202,9 @@ export type Config = z.infer<typeof ConfigSchema>;
 
 export type MiddlewareConfig = z.infer<typeof MiddlewareConfigSchema>;
 export const DEFAULT_MIDDLEWARE_CONFIG: MiddlewareConfig = DefaultMiddlewareConfig;
+export type DebugConfig = z.infer<typeof DebugConfigSchema>;
+export type DiscordClientDebugConfig = DebugConfig['discordClientEvents'];
+export const DEFAULT_DEBUG_CONFIG: DebugConfig = DefaultDebugConfig;
 
 /**
  * Creates a validated configuration object from environment variables
