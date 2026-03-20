@@ -90,7 +90,11 @@ export class GatewayAdapter {
 
         for (const eventName of eventNames) {
             this.client.on(eventName, (...args) => {
-                this.logger.debug(this.createDebugPayload(eventName, args), 'Observed Discord client event');
+                try {
+                    this.logger.debug(this.createDebugPayload(eventName, args), 'Observed Discord client event');
+                } catch (error) {
+                    this.logger.error(error, `Error capturing debug payload for ${eventName}`);
+                }
             });
         }
     }

@@ -183,7 +183,7 @@ export const ConfigSchema = z.object({
         /** Discord bot token (maps to DISCORD_TOKEN env var) */
         token: autoEnv(z.string().min(1, 'Discord token is required')),
         /** Discord application/client ID (maps to DISCORD_CLIENT_ID env var) */
-        clientId: autoEnv(z.string().min(1, 'Discord client ID is required').optional()),
+        clientId: autoEnv(z.string().min(1, 'Discord client ID must not be empty when provided').optional()),
         /** Optional guild ID for development/testing (maps to DISCORD_GUILD_ID env var) */
         guildId: autoEnv(z.string().optional()),
     }),

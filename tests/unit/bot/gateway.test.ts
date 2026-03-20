@@ -104,6 +104,27 @@ describe('GatewayAdapter', () => {
         );
     });
 
+    it('catches debug payload errors and logs them instead of throwing', () => {
+        const { client, handlers } = createClientStub();
+        const logger = createLoggerStub();
+        const adapter = new GatewayAdapter(client as never, createEventBusStub(), {
+            debug: {
+                enabled: true,
+                events: ['guildCreate'],
+            },
+            logger,
+        });
+
+        adapter.registerListeners();
+
+        const guildCreateHandler = handlers.get('guildCreate')?.[0];
+        expect(guildCreateHandler).toBeDefined();
+
+        expect(() => guildCreateHandler?.(undefined)).not.toThrow();
+        expect(logger.debug).not.toHaveBeenCalled();
+        expect(logger.error).toHaveBeenCalledWith(expect.anything(), 'Error capturing debug payload for guildCreate');
+    });
+
     it('preserves normal MESSAGE_CREATE publishing when debug capture is enabled', () => {
         const { client, handlers } = createClientStub();
         const eventBus = createEventBusStub();

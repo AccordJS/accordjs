@@ -217,6 +217,35 @@ describe('Configuration Schema Validation', () => {
             }
         });
 
+        it('fails validation when Discord client ID is empty', () => {
+            const mockConfig = {
+                env: 'development',
+                log: {
+                    level: 'info',
+                },
+                discord: {
+                    token: 'valid_discord_token',
+                    clientId: '',
+                },
+                middleware: defaultMiddleware,
+                debug: defaultDebug,
+            };
+
+            const result = ConfigSchema.safeParse(mockConfig);
+            expect(result.success).toBe(false);
+
+            if (!result.success) {
+                expect(result.error.issues).toEqual(
+                    expect.arrayContaining([
+                        expect.objectContaining({
+                            message: 'Discord client ID must not be empty when provided',
+                            path: ['discord', 'clientId'],
+                        }),
+                    ])
+                );
+            }
+        });
+
         it('fails validation with invalid environment', () => {
             const mockConfig = {
                 env: 'staging', // Invalid environment

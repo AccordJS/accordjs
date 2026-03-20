@@ -52,7 +52,7 @@
    # Optional: useful for install URLs or command registration
    DISCORD_CLIENT_ID=your_application_id
    # Optional: enable structured Discord client event debug logs
-   DEBUG_DISCORD_CLIENT_EVENTS_ENABLED=true
+   DEBUG_DISCORD_CLIENT_EVENTS_ENABLED=false
    DEBUG_DISCORD_CLIENT_EVENTS_EVENTS=guildCreate,messageCreate,debug
    ```
 
