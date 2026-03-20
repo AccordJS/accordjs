@@ -18,7 +18,13 @@ describe('CommandRouterPlugin', () => {
         config: {
             env: 'test',
             log: { level: 'info' },
-            discord: { token: 'test', clientId: 'test' },
+            discord: { token: 'test' },
+            debug: {
+                discordClientEvents: {
+                    enabled: false,
+                    events: [],
+                },
+            },
         } as Config,
         logger: createLogger('Test'),
     });
@@ -47,7 +53,13 @@ describe('CommandRouterPlugin', () => {
             config: {
                 env: 'test',
                 log: { level: 'info' },
-                discord: { token: 'test', clientId: 'test' },
+                discord: { token: 'test' },
+                debug: {
+                    discordClientEvents: {
+                        enabled: false,
+                        events: [],
+                    },
+                },
             } as Config,
             logger: createLogger('Test'),
         };

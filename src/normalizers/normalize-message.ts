@@ -2,7 +2,7 @@ import { type MessageCreateEvent, MessageCreateEventSchema } from '@app/types';
 import type { Message } from 'discord.js';
 
 /**
- * Normalizes a Discord.js Message object into a MessageCreateEvent.
+ * Normalizes a Discord.js Message object into an AccordJS MessageCreateEvent.
  *
  * @param message - Raw Discord.js Message object.
  * @returns Validated, normalized MessageCreateEvent.

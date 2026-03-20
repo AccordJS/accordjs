@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { normalizeMember, normalizeMemberLeave } from '@app/events/normalize-member';
+import { normalizeMember, normalizeMemberLeave } from '@app/normalizers/normalize-member';
 import type { Guild, GuildMember, PartialGuildMember, User } from 'discord.js';
 import { ZodError } from 'zod';
 

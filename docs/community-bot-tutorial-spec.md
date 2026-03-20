@@ -9,8 +9,8 @@ Teach a developer how AccordJS works by building a realistic local-development b
 By the end, the reader should understand:
 
 - local `.env` setup for a bot token they already own
-- explicit app bootstrap with `createAccordApp()`
-- the distinction between `gateway events` and `Accord events`
+- explicit app bootstrap with `createAccordJsApp()`
+- the distinction between `gateway events` and `AccordJS events`
 - explicit global middleware composition
 - plugin registration and external handler bindings
 - how command handling and member lifecycle events fit together
@@ -39,16 +39,16 @@ Create a community bot for a Discord server that:
 ### Concepts the Tutorial Must Teach
 
 - choosing `gatewayEvents` intentionally
-- mapping gateway events to Accord events
+- mapping gateway events to AccordJS events
 - composing middleware in app bootstrap code
 - adding plugin-scoped middleware inside a plugin
-- wiring plugin methods to Accord events explicitly
+- wiring plugin methods to AccordJS events explicitly
 - understanding when middleware does and does not run
 
 ### Milestones
 
 1. Create the local project and env
-2. Bootstrap the app with `createAccordApp()`
+2. Bootstrap the app with `createAccordJsApp()`
 3. Add global middleware
 4. Add a command plugin
 5. Add a membership plugin for joins/leaves

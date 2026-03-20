@@ -8,7 +8,7 @@ const getUsername = (member: GuildMemberLike): string => {
 };
 
 /**
- * Normalizes a Discord.js GuildMember object into a MemberJoinEvent.
+ * Normalizes a Discord.js guildMemberAdd payload into an AccordJS MemberJoinEvent.
  *
  * @param member - Raw Discord.js GuildMember object.
  * @returns Validated, normalized MemberJoinEvent.
@@ -27,7 +27,7 @@ export const normalizeMemberJoin = (member: GuildMember): MemberJoinEvent => {
 };
 
 /**
- * Normalizes a Discord.js guildMemberRemove event into a MemberLeaveEvent.
+ * Normalizes a Discord.js guildMemberRemove payload into an AccordJS MemberLeaveEvent.
  *
  * @param member - Raw Discord.js guild member payload.
  * @returns Validated, normalized MemberLeaveEvent.

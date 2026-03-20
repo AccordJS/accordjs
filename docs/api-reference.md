@@ -9,20 +9,20 @@ import {
     BasePlugin,
     BotFilterMiddleware,
     CommandRouterPlugin,
-    createAccordApp,
+    createAccordJsApp,
     createConfig,
 } from 'accordjs';
 ```
 
 ## App Bootstrap
 
-### `createAccordApp(options?: AccordAppOptions): Promise<AccordApp>`
+### `createAccordJsApp(options?: AccordJsAppOptions): Promise<AccordJsApp>`
 Creates the Discord client, event bus, gateway, plugin manager, registers middleware/plugins, wires selected gateway events, and returns runtime handles.
 
-### `startAccordApp(options?: AccordAppOptions): Promise<AccordApp>`
-Equivalent to `createAccordApp()` followed by `await app.start()`.
+### `startAccordJsApp(options?: AccordJsAppOptions): Promise<AccordJsApp>`
+Equivalent to `createAccordJsApp()` followed by `await app.start()`.
 
-`AccordAppOptions` supports:
+`AccordJsAppOptions` supports:
 - `config?: Config`
 - `intents?: readonly number[]`
 - `gatewayEvents?: readonly GatewayEvent[]`
@@ -30,7 +30,7 @@ Equivalent to `createAccordApp()` followed by `await app.start()`.
 - `middleware?: AnyEventMiddleware[]`
 - `plugins?: PluginRegistration[]`
 
-`AccordApp` returns:
+`AccordJsApp` returns:
 - `client`
 - `config`
 - `eventBus`
@@ -53,13 +53,7 @@ Allowed values: `'development' | 'production' | 'test'`.
 ### `LogLevelEnumSchema`
 Allowed values: `'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace'`.
 
-### `RateLimitKeySchema`
-Allowed values: `'userId' | 'channelId' | 'serverId' | 'eventType' | 'global'`.
-
-### `DEFAULT_MIDDLEWARE_CONFIG`
-Legacy default global middleware configuration object for the config-loader helper.
-
-### `Config`, `MiddlewareConfig`, `DebugConfig`
+### `Config` and `DebugConfig`
 Inferred TypeScript types from the configuration schema.
 
 ## Discord Gateway Layer
@@ -97,6 +91,8 @@ Methods:
 - `removeMiddleware(middleware: AnyEventMiddleware | string): void`
 - `clearMiddleware(): void`
 - `listMiddleware(): AnyEventMiddleware[]`
+
+The current in-memory event bus runs middleware only when a handler is subscribed for the published AccordJS event.
 
 ### `InMemoryEventBus`
 Default in-memory implementation of `EventBus`.
@@ -224,7 +220,8 @@ Creates a Pino logger namespaced with the provided component name.
 These symbols are exported from the package barrel for advanced use (no `@app/` paths needed):
 - Middleware primitives: `BaseMiddleware`, `EventMiddleware`, `MiddlewareNext`, `MiddlewareHandler`, `MiddlewareLogger`, `runMiddlewareChain`
 - Built-in middleware classes: `BotFilterMiddleware`, `RateLimiterMiddleware`, `ProfanityFilterMiddleware`, `LoggerMiddleware`, `MetricsMiddleware`
+- Built-in middleware config helpers: `BuiltInMiddlewareConfigSchema`, `BuiltInMiddlewareConfig`, `DEFAULT_BUILT_IN_MIDDLEWARE_CONFIG`
 - Pipeline helpers: `runEventPipeline`, `PipelineContext`, `PipelineTraceEntry`, `PipelineStage`
 - Plugin wiring helpers: `registerMappedHandlers`, `HandlerRegistry`, `PluginMiddlewareManager`
 
-`loadGlobalMiddleware` remains available by direct module path for advanced or legacy use, but explicit app composition via `createAccordApp()` is now the primary path.
+`loadGlobalMiddleware` remains available by direct module path for advanced or legacy use, but explicit app composition via `createAccordJsApp()` is now the primary path.

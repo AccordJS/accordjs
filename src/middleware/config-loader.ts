@@ -1,15 +1,14 @@
-import type { Config, MiddlewareConfig } from '@app/config';
 import {
     BotFilterMiddleware,
+    type BuiltInMiddlewareConfig,
     LoggerMiddleware,
     MetricsMiddleware,
     ProfanityFilterMiddleware,
     RateLimiterMiddleware,
+    type RateLimitKey,
 } from '@app/middleware/built-in';
 import type { AnyEventMiddleware } from '@app/middleware/types';
 import type { BotEvent } from '@app/types';
-
-type RateLimitKey = 'userId' | 'channelId' | 'serverId' | 'eventType' | 'global';
 
 const keyGenerators: Record<RateLimitKey, (event: BotEvent) => string> = {
     userId: (event) => {
@@ -28,9 +27,9 @@ const keyGenerators: Record<RateLimitKey, (event: BotEvent) => string> = {
     global: () => 'global',
 };
 
-export const loadGlobalMiddleware = (config: Config): AnyEventMiddleware[] => {
+export const loadGlobalMiddleware = (config: BuiltInMiddlewareConfig): AnyEventMiddleware[] => {
     const middleware: AnyEventMiddleware[] = [];
-    const globalConfig: MiddlewareConfig['global'] = config.middleware.global;
+    const globalConfig = config.global;
 
     if (globalConfig.botFilter.enabled) {
         middleware.push(new BotFilterMiddleware());

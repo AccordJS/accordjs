@@ -28,13 +28,13 @@ AccordJS uses a plugin-based architecture where features are implemented as inde
 ### Core Flow
 
 ```
-Gateway Event → Accord Event Normalization → Global Middleware → Plugin Handler Binding → Plugin Middleware → Plugin Handlers
+Gateway Event → AccordJS Event Normalization → Global Middleware → Plugin Handler Binding → Plugin Middleware → Plugin Handlers
 ```
 
 1. **Discord Gateway**: Raw Discord.js events are isolated here
 2. **Event Normalization**: Discord events are transformed into internal types using Zod schemas
 3. **Global Middleware**: App-owned middleware attached during bootstrap
-4. **Plugin Handler Binding**: Either app bootstrap or plugin-owned `eventMap` decides which methods receive which Accord events
+4. **Plugin Handler Binding**: Either app bootstrap or plugin-owned `eventMap` decides which methods receive which AccordJS events
 5. **Plugin Middleware**: Plugin-specific middleware classes
 6. **Plugin Handlers**: Your business logic methods
 
@@ -67,7 +67,7 @@ src/plugins/your-plugin/
 
 ### The EventMap Concept
 
-`eventMap` is now one supported wiring mechanism, not the only one. If an app uses `createAccordApp()` with explicit `handlerBindings`, the app can own the handler-to-Accord-event mapping instead.
+`eventMap` is now one supported wiring mechanism, not the only one. If an app uses `createAccordJsApp()` with explicit `handlerBindings`, the app can own the handler-to-Accord-event mapping instead.
 
 Instead of manually subscribing to events, plugins declare an `eventMap` that maps method names to event types:
 
@@ -620,7 +620,13 @@ describe('WelcomePlugin', () => {
         config: {
             env: 'test',
             log: { level: 'info' },
-            discord: { token: 'test', clientId: 'test' },
+            discord: { token: 'test' },
+            debug: {
+                discordClientEvents: {
+                    enabled: false,
+                    events: [],
+                },
+            },
         } as Config,
         logger: createLogger('Test'),
     });

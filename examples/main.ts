@@ -3,7 +3,7 @@
  * This file handles the framework startup and Discord connection
  */
 
-import { createAccordApp } from '@app/app/bootstrap';
+import { createAccordJsApp } from '@app/app/bootstrap';
 import { BotFilterMiddleware } from '@app/middleware/built-in';
 import type { PluginManager } from '@app/plugins/plugin-manager';
 import { createLogger } from '@app/utils/create-logger';
@@ -13,7 +13,7 @@ const logger = createLogger('AccordJS');
 try {
     logger.info('Initializing AccordJS framework...');
 
-    const app = await createAccordApp({
+    const app = await createAccordJsApp({
         middleware: [new BotFilterMiddleware()],
         gatewayEvents: ['messageCreate', 'guildMemberAdd', 'guildMemberRemove'],
     });

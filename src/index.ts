@@ -14,15 +14,15 @@ export * from '@app/bot/intents';
 export * from '@app/bus/index';
 // Configuration
 export * from '@app/config';
-// Event Normalization
-export * from '@app/events/normalize-member';
-export * from '@app/events/normalize-message';
 // Middleware (public + advanced)
 export * from '@app/middleware/base-middleware';
 export * from '@app/middleware/built-in';
 // Advanced helpers
 export * from '@app/middleware/middleware-runner';
 export * from '@app/middleware/types';
+// Event Normalization
+export * from '@app/normalizers/normalize-member';
+export * from '@app/normalizers/normalize-message';
 export * from '@app/pipeline/event-pipeline';
 export * from '@app/pipeline/pipeline-context';
 // Plugin System

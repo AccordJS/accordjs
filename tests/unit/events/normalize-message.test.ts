@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { normalizeMessage } from '@app/events/normalize-message';
+import { normalizeMessage } from '@app/normalizers/normalize-message';
 import type { Message, User } from 'discord.js';
 
 describe('Message Normalization', () => {

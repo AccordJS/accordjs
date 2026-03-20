@@ -1,24 +1,6 @@
 import { BaseMiddleware } from '@app/middleware/base-middleware';
 import type { BotEvent } from '@app/types';
-
-export interface PerformanceMetric {
-    count: number;
-    totalMs: number;
-    minMs: number;
-    maxMs: number;
-}
-
-export interface MetricsSnapshot {
-    counts: Record<string, number>;
-    performance: Record<string, PerformanceMetric & { avgMs: number }>;
-}
-
-export interface MetricsMiddlewareOptions {
-    trackCounts?: boolean;
-    trackPerformance?: boolean;
-    getTime?: () => number;
-    onRecord?: (snapshot: MetricsSnapshot) => void;
-}
+import type { MetricsMiddlewareOptions, MetricsSnapshot, PerformanceMetric } from './types';
 
 export class MetricsMiddleware<TEvent = BotEvent> extends BaseMiddleware<TEvent> {
     private counts = new Map<string, number>();

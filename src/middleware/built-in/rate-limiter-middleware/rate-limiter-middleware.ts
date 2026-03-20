@@ -1,24 +1,7 @@
 import { BaseMiddleware } from '@app/middleware/base-middleware';
-import type { BotEvent } from '@app/types';
+import type { RateLimiterOptions, RateLimitState } from './types';
 
-export interface RateLimitState {
-    count: number;
-    remaining: number;
-    resetAt: number;
-}
-
-export interface RateLimiterOptions<TEvent = BotEvent> {
-    windowMs: number;
-    maxEvents: number;
-    keyGenerator: (event: TEvent) => string;
-    block?: boolean;
-    getTime?: () => number;
-    onLimit?: (event: TEvent, state: RateLimitState) => void;
-    pruneIntervalMs?: number;
-    skip?: (event: TEvent) => boolean;
-}
-
-export class RateLimiterMiddleware<TEvent = BotEvent> extends BaseMiddleware<TEvent> {
+export class RateLimiterMiddleware<TEvent = unknown> extends BaseMiddleware<TEvent> {
     private buckets = new Map<string, number[]>();
     private getTime: () => number;
     private lastPruneAt = 0;

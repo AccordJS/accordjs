@@ -32,15 +32,15 @@ AccordJS now prefers explicit bootstrap code over config-driven middleware loadi
 - which `gateway events` to listen to from Discord.js
 - which global middleware to attach
 - which plugins to register
-- which Accord events each plugin handler should receive
+- which AccordJS events each plugin handler should receive
 
 ```typescript
-import { BotFilterMiddleware, CommandRouterPlugin, createAccordApp, createConfig, InMemoryCommandRegistry } from 'accordjs';
+import { BotFilterMiddleware, CommandRouterPlugin, createAccordJsApp, createConfig, InMemoryCommandRegistry } from 'accordjs';
 
 const config = createConfig();
 const registry = new InMemoryCommandRegistry();
 
-const app = await createAccordApp({
+const app = await createAccordJsApp({
     config,
     middleware: [new BotFilterMiddleware()],
     gatewayEvents: ['messageCreate', 'guildMemberAdd', 'guildMemberRemove'],
@@ -57,16 +57,16 @@ const app = await createAccordApp({
 await app.start();
 ```
 
-## Gateway Events vs Accord Events
+## Gateway Events vs AccordJS Events
 
 - `gateway events` are Discord.js client events such as `guildMemberRemove`
-- `Accord events` are normalized framework events such as `MEMBER_LEAVE`
+- `AccordJS events` are normalized framework events such as `MEMBER_LEAVE`
 
 See `docs/event-model.md` for the canonical mapping table and the currently unsupported gaps.
 
 ## Middleware and Plugins
 
-- Global middleware is app-owned and passed directly to `createAccordApp()`
+- Global middleware is app-owned and passed directly to `createAccordJsApp()`
 - Plugin-scoped middleware stays plugin-owned via `BasePlugin.addMiddleware()`
 - Handler bindings can be supplied by app bootstrap code when you do not want plugins to own the event map
 

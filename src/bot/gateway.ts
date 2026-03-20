@@ -1,7 +1,7 @@
 import type { EventBus } from '@app/bus';
 import type { DiscordClientDebugConfig } from '@app/config';
-import { normalizeMemberJoin, normalizeMemberLeave } from '@app/events/normalize-member';
-import { normalizeMessage } from '@app/events/normalize-message';
+import { normalizeMemberJoin, normalizeMemberLeave } from '@app/normalizers/normalize-member';
+import { normalizeMessage } from '@app/normalizers/normalize-message';
 import {
     DEFAULT_DISCORD_CLIENT_DEBUG_EVENTS,
     DEFAULT_GATEWAY_EVENTS,

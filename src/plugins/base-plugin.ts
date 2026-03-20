@@ -1,5 +1,5 @@
 import type { EventMiddleware } from '@app/middleware/types';
-import type { EventHandlerMap, Plugin, PluginContext } from '@app/types/index';
+import type { EventHandlerMap, Plugin, PluginContext } from '@app/types';
 import { registerMappedHandlers } from './event-mapper';
 import { PluginMiddlewareManager } from './plugin-middleware-manager';
 

@@ -2,6 +2,7 @@
  * Type exports for AccordJS core
  */
 
+export * from '@app/types/app';
 export * from '@app/types/debug';
 export * from '@app/types/events';
 export * from '@app/types/gateway-events';

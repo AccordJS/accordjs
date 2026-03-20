@@ -1,36 +1,11 @@
 import { createDiscordClient } from '@app/bot/client';
 import { GatewayAdapter } from '@app/bot/gateway';
 import { InMemoryEventBus } from '@app/bus';
-import { type Config, createConfig, type DiscordClientDebugConfig } from '@app/config';
-import type { AnyEventMiddleware } from '@app/middleware/types';
-import { PluginManager, type PluginRegistrationOptions } from '@app/plugins/plugin-manager';
-import type { GatewayEvent, Plugin } from '@app/types';
+import { createConfig } from '@app/config';
+import { PluginManager } from '@app/plugins/plugin-manager';
+import type { AccordJsApp, AccordJsAppOptions } from '@app/types';
 
-export interface PluginRegistration {
-    plugin: Plugin;
-    handlerBindings?: PluginRegistrationOptions['handlerBindings'];
-}
-
-export interface AccordAppOptions {
-    config?: Config;
-    intents?: readonly number[];
-    gatewayEvents?: readonly GatewayEvent[];
-    debug?: DiscordClientDebugConfig;
-    middleware?: AnyEventMiddleware[];
-    plugins?: PluginRegistration[];
-}
-
-export interface AccordApp {
-    client: ReturnType<typeof createDiscordClient>;
-    config: Config;
-    eventBus: InMemoryEventBus;
-    gateway: GatewayAdapter;
-    pluginManager: PluginManager;
-    start: () => Promise<string>;
-    stop: () => Promise<void>;
-}
-
-export const createAccordApp = async (options: AccordAppOptions = {}): Promise<AccordApp> => {
+export const createAccordJsApp = async (options: AccordJsAppOptions = {}): Promise<AccordJsApp> => {
     const config = options.config ?? createConfig();
     const eventBus = new InMemoryEventBus();
 
@@ -66,8 +41,8 @@ export const createAccordApp = async (options: AccordAppOptions = {}): Promise<A
     };
 };
 
-export const startAccordApp = async (options: AccordAppOptions = {}): Promise<AccordApp> => {
-    const app = await createAccordApp(options);
+export const startAccordJsApp = async (options: AccordJsAppOptions = {}): Promise<AccordJsApp> => {
+    const app = await createAccordJsApp(options);
     await app.start();
     return app;
 };

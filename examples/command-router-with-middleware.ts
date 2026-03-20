@@ -1,4 +1,4 @@
-import { createAccordApp } from '@app/app/bootstrap';
+import { createAccordJsApp } from '@app/app/bootstrap';
 import { createConfig } from '@app/config';
 import { BotFilterMiddleware, LoggerMiddleware } from '@app/middleware/built-in';
 import { type Command, type CommandContext, CommandRouterPlugin, InMemoryCommandRegistry } from '@app/plugins/commands';
@@ -17,7 +17,7 @@ const pingCommand: Command = {
 };
 registry.register(pingCommand);
 
-const _app = await createAccordApp({
+const _app = await createAccordJsApp({
     config,
     middleware: [
         new BotFilterMiddleware(),

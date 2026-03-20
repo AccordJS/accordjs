@@ -10,7 +10,7 @@
 ## Features
 
 ### Discord Bot Framework
-- 🤖 **Event-Driven Architecture**: Explicit gateway event selection with normalized Accord events
+- 🤖 **Event-Driven Architecture**: Explicit gateway event selection with normalized AccordJS events
 - 🔌 **Plugin System**: Extensible plugin architecture for modular feature development
 - 📡 **Typed Event Bus**: Fully typed event distribution system with compile-time safety
 - 🛠️ **Gateway Debug Capture**: Optional structured logging for selected Discord.js client events such as `guildCreate`
@@ -50,7 +50,6 @@
 3. **Configure your local environment**:
    ```bash
    DISCORD_TOKEN=your_bot_token
-   DISCORD_CLIENT_ID=
    DEBUG_DISCORD_CLIENT_EVENTS_ENABLED=false
    DEBUG_DISCORD_CLIENT_EVENTS_EVENTS=guildCreate,messageCreate,debug
    ```
@@ -77,8 +76,9 @@
 
 AccordJS follows a clean, event-driven architecture with these core principles:
 
-### 1. Gateway Events vs Accord Events
-AccordJS distinguishes between Discord.js `gateway events` such as `guildMemberRemove` and normalized `Accord events` such as `MEMBER_LEAVE`.
+### 1. Gateway Events vs AccordJS Events
+AccordJS distinguishes between Discord.js `gateway events` such as `guildMemberRemove` and normalized `AccordJS events` such as `MEMBER_LEAVE`.
+The canonical mapping table lives in [docs/event-model.md](docs/event-model.md).
 
 ### 2. Discord Client Isolation
 The Discord client exists only in the gateway layer, preventing Discord-specific objects from leaking into application logic.
@@ -106,10 +106,9 @@ src/
 ├── bus/                   # Event distribution system
 │   ├── in-memory-event-bus.ts # In-memory event bus implementation
 │   └── types.ts           # Event bus interfaces and types
-├── events/                # Event normalization logic
+├── normalizers/           # Gateway-to-AccordJS normalization logic
 │   ├── normalize-message.ts
-│   ├── normalize-member.ts
-│   └── types.ts          # Event type definitions
+│   └── normalize-member.ts
 ├── plugins/               # Plugin implementations
 │   ├── commands/         # Command handling plugin
 │   ├── logging/          # Logging plugin
@@ -167,7 +166,6 @@ bun test --watch
 ## Configuration Notes
 
 - `DISCORD_TOKEN` is required for bot login.
-- `DISCORD_CLIENT_ID` is optional. It is not used for gateway login, but it can be useful for install links and other application-level tooling.
 - Discord OAuth client secrets are not required for the bot runtime. They are only needed for OAuth2 flows such as "Log in with Discord" on a dashboard.
 - `.env.example` only includes values the current runtime or debug tooling can actually use.
 
@@ -222,10 +220,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Event Flow
 ```
-Discord Gateway Event → Gateway Adapter → Accord Event Normalization (Zod) → Event Bus → Middleware Pipeline → Plugin Handler
+Discord Gateway Event → Gateway Adapter → AccordJS Event Normalization (Zod) → Event Bus → Middleware Pipeline → Plugin Handler
 ```
 
-The current in-memory event bus only runs middleware when a handler is subscribed for the published Accord event.
+The current in-memory event bus only runs middleware when a handler is subscribed for the published AccordJS event.
 
 ### Type Safety
 AccordJS enforces strict type safety with:
@@ -247,7 +245,7 @@ AccordJS includes a robust command router with advanced features:
 ### Plugin Development
 Applications explicitly compose runtime pieces:
 ```typescript
-const app = await createAccordApp({
+const app = await createAccordJsApp({
     middleware: [new BotFilterMiddleware()],
     gatewayEvents: ['messageCreate', 'guildMemberRemove'],
     plugins: [
