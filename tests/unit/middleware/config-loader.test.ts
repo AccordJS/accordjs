@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { type Config, DEFAULT_MIDDLEWARE_CONFIG } from '@app/config';
+import { type Config, DEFAULT_DEBUG_CONFIG, DEFAULT_MIDDLEWARE_CONFIG } from '@app/config';
 import {
     BotFilterMiddleware,
     LoggerMiddleware,
@@ -14,6 +14,7 @@ const baseConfig: Config = {
     log: { level: 'info' },
     discord: { token: 'x', clientId: 'y' },
     middleware: DEFAULT_MIDDLEWARE_CONFIG,
+    debug: DEFAULT_DEBUG_CONFIG,
 };
 
 describe('loadGlobalMiddleware', () => {

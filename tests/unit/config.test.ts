@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { ConfigSchema, createConfig, LogLevelEnumSchema, NodeEnvEnumSchema } from '@app/config';
+import { DEFAULT_DISCORD_CLIENT_DEBUG_EVENTS } from '@app/types';
 
 const defaultMiddleware = {
     global: {
@@ -31,6 +32,13 @@ const defaultMiddleware = {
             trackCounts: true,
             trackPerformance: false,
         },
+    },
+};
+
+const defaultDebug = {
+    discordClientEvents: {
+        enabled: false,
+        events: [...DEFAULT_DISCORD_CLIENT_DEBUG_EVENTS],
     },
 };
 
@@ -122,6 +130,7 @@ describe('Configuration Schema Validation', () => {
                     guildId: 'optional_guild_id',
                 },
                 middleware: defaultMiddleware,
+                debug: defaultDebug,
             };
 
             const result = ConfigSchema.safeParse(mockConfig);
@@ -133,6 +142,7 @@ describe('Configuration Schema Validation', () => {
                 expect(result.data.discord.token).toBe('valid_discord_token');
                 expect(result.data.discord.clientId).toBe('valid_client_id');
                 expect(result.data.discord.guildId).toBe('optional_guild_id');
+                expect(result.data.debug.discordClientEvents.enabled).toBe(false);
             }
         });
 
@@ -144,15 +154,16 @@ describe('Configuration Schema Validation', () => {
                 },
                 discord: {
                     token: 'valid_discord_token',
-                    clientId: 'valid_client_id',
                 },
                 middleware: defaultMiddleware,
+                debug: defaultDebug,
             };
 
             const result = ConfigSchema.safeParse(mockConfig);
             expect(result.success).toBe(true);
 
             if (result.success) {
+                expect(result.data.discord.clientId).toBeUndefined();
                 expect(result.data.discord.guildId).toBeUndefined();
             }
         });
@@ -165,9 +176,9 @@ describe('Configuration Schema Validation', () => {
                 },
                 discord: {
                     token: '',
-                    clientId: 'valid_client_id',
                 },
                 middleware: defaultMiddleware,
+                debug: defaultDebug,
             };
 
             const result = ConfigSchema.safeParse(mockConfig);
@@ -185,7 +196,28 @@ describe('Configuration Schema Validation', () => {
             }
         });
 
-        it('fails validation when Discord client ID is missing', () => {
+        it('accepts configuration when Discord client ID is missing', () => {
+            const mockConfig = {
+                env: 'development',
+                log: {
+                    level: 'info',
+                },
+                discord: {
+                    token: 'valid_discord_token',
+                },
+                middleware: defaultMiddleware,
+                debug: defaultDebug,
+            };
+
+            const result = ConfigSchema.safeParse(mockConfig);
+            expect(result.success).toBe(true);
+
+            if (result.success) {
+                expect(result.data.discord.clientId).toBeUndefined();
+            }
+        });
+
+        it('fails validation when Discord client ID is empty', () => {
             const mockConfig = {
                 env: 'development',
                 log: {
@@ -196,6 +228,7 @@ describe('Configuration Schema Validation', () => {
                     clientId: '',
                 },
                 middleware: defaultMiddleware,
+                debug: defaultDebug,
             };
 
             const result = ConfigSchema.safeParse(mockConfig);
@@ -205,7 +238,7 @@ describe('Configuration Schema Validation', () => {
                 expect(result.error.issues).toEqual(
                     expect.arrayContaining([
                         expect.objectContaining({
-                            message: 'Discord client ID is required',
+                            message: 'Discord client ID must not be empty when provided',
                             path: ['discord', 'clientId'],
                         }),
                     ])
@@ -224,6 +257,7 @@ describe('Configuration Schema Validation', () => {
                     clientId: 'valid_client_id',
                 },
                 middleware: defaultMiddleware,
+                debug: defaultDebug,
             };
 
             const result = ConfigSchema.safeParse(mockConfig);
@@ -241,6 +275,7 @@ describe('Configuration Schema Validation', () => {
                     clientId: 'valid_client_id',
                 },
                 middleware: defaultMiddleware,
+                debug: defaultDebug,
             };
 
             const result = ConfigSchema.safeParse(mockConfig);
@@ -255,9 +290,9 @@ describe('Configuration Schema Validation', () => {
                 },
                 discord: {
                     token: '', // Missing required field
-                    clientId: '', // Missing required field
                 },
                 middleware: defaultMiddleware,
+                debug: defaultDebug,
             };
 
             const result = ConfigSchema.safeParse(mockConfig);
@@ -270,8 +305,56 @@ describe('Configuration Schema Validation', () => {
                 // Check for specific validation errors
                 const errorMessages = result.error.issues.map((issue) => issue.message);
                 expect(errorMessages).toContain('Discord token is required');
-                expect(errorMessages).toContain('Discord client ID is required');
             }
+        });
+
+        it('validates debug configuration with known Discord client events', () => {
+            const mockConfig = {
+                env: 'development',
+                log: {
+                    level: 'info',
+                },
+                discord: {
+                    token: 'valid_discord_token',
+                },
+                middleware: defaultMiddleware,
+                debug: {
+                    discordClientEvents: {
+                        enabled: true,
+                        events: ['guildCreate', 'messageCreate', 'debug'],
+                    },
+                },
+            };
+
+            const result = ConfigSchema.safeParse(mockConfig);
+            expect(result.success).toBe(true);
+
+            if (result.success) {
+                expect(result.data.debug.discordClientEvents.enabled).toBe(true);
+                expect(result.data.debug.discordClientEvents.events).toEqual(['guildCreate', 'messageCreate', 'debug']);
+            }
+        });
+
+        it('fails validation when debug configuration includes unsupported Discord client events', () => {
+            const mockConfig = {
+                env: 'development',
+                log: {
+                    level: 'info',
+                },
+                discord: {
+                    token: 'valid_discord_token',
+                },
+                middleware: defaultMiddleware,
+                debug: {
+                    discordClientEvents: {
+                        enabled: true,
+                        events: ['guildCreate', 'notARealEvent'],
+                    },
+                },
+            };
+
+            const result = ConfigSchema.safeParse(mockConfig);
+            expect(result.success).toBe(false);
         });
     });
 
@@ -280,21 +363,21 @@ describe('Configuration Schema Validation', () => {
             // Set up required environment variables
             process.env.NODE_ENV = 'development';
             process.env.DISCORD_TOKEN = 'test_discord_token';
-            process.env.DISCORD_CLIENT_ID = 'test_client_id';
 
             const config = createConfig();
 
             expect(config.env).toBe('development');
             expect(config.log.level).toBeDefined(); // Uses schema default
             expect(config.discord.token).toBe('test_discord_token');
-            expect(config.discord.clientId).toBe('test_client_id');
+            expect(config.discord.clientId).toBeUndefined();
+            expect(config.debug.discordClientEvents.enabled).toBe(false);
+            expect(config.debug.discordClientEvents.events).toEqual([...DEFAULT_DISCORD_CLIENT_DEBUG_EVENTS]);
             // guildId is optional, so it may or may not be defined
         });
 
         it('throws error when required environment variables are missing', () => {
             // Clear required environment variables
             delete process.env.DISCORD_TOKEN;
-            delete process.env.DISCORD_CLIENT_ID;
 
             expect(() => createConfig()).toThrow();
         });
@@ -302,7 +385,6 @@ describe('Configuration Schema Validation', () => {
         it('uses defaults when optional environment variables are missing', () => {
             // Set required variables but omit optionals
             process.env.DISCORD_TOKEN = 'test_token';
-            process.env.DISCORD_CLIENT_ID = 'test_client_id';
             delete process.env.NODE_ENV;
             delete process.env.LOG_LEVEL;
             delete process.env.DISCORD_GUILD_ID;
@@ -312,8 +394,19 @@ describe('Configuration Schema Validation', () => {
             expect(config.env).toBe('development'); // default
             expect(config.log.level).toBe('debug'); // default
             expect(config.discord.token).toBe('test_token');
-            expect(config.discord.clientId).toBe('test_client_id');
+            expect(config.discord.clientId).toBeUndefined();
             expect(config.discord.guildId).toBeUndefined();
+        });
+
+        it('reads debug configuration from environment variables', () => {
+            process.env.DISCORD_TOKEN = 'test_token';
+            process.env.DEBUG_DISCORD_CLIENT_EVENTS_ENABLED = 'true';
+            process.env.DEBUG_DISCORD_CLIENT_EVENTS_EVENTS = 'guildCreate,messageCreate,debug';
+
+            const config = createConfig();
+
+            expect(config.debug.discordClientEvents.enabled).toBe(true);
+            expect(config.debug.discordClientEvents.events).toEqual(['guildCreate', 'messageCreate', 'debug']);
         });
     });
 
@@ -326,10 +419,10 @@ describe('Configuration Schema Validation', () => {
                 },
                 discord: {
                     token: 'test_token',
-                    clientId: 'test_client_id',
                     guildId: 'test_guild_id',
                 },
                 middleware: defaultMiddleware,
+                debug: defaultDebug,
             };
 
             const result = ConfigSchema.safeParse(mockConfig);
@@ -340,13 +433,13 @@ describe('Configuration Schema Validation', () => {
                 const env: 'development' | 'production' | 'test' = result.data.env;
                 const logLevel: 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace' = result.data.log.level;
                 const token: string = result.data.discord.token;
-                const clientId: string = result.data.discord.clientId;
+                const clientId: string | undefined = result.data.discord.clientId;
                 const guildId: string | undefined = result.data.discord.guildId;
 
                 expect(env).toBe('development');
                 expect(logLevel).toBe('info');
                 expect(token).toBe('test_token');
-                expect(clientId).toBe('test_client_id');
+                expect(clientId).toBeUndefined();
                 expect(guildId).toBe('test_guild_id');
             }
         });
