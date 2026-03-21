@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { normalizeMessage, normalizeMessageDelete } from '@app/normalizers/normalize-message';
+import { normalizeMessage, normalizeMessageDelete, normalizeMessageUpdate } from '@app/normalizers/normalize-message';
 import type { Message, PartialMessage, User } from 'discord.js';
 
 describe('Message Normalization', () => {
@@ -130,5 +130,77 @@ describe('Message Normalization', () => {
         } as PartialMessage;
 
         expect(() => normalizeMessageDelete(mockMessage)).toThrow();
+    });
+
+    it('should correctly normalize an updated Discord message', () => {
+        const oldMessage = {
+            id: 'msg-update-123',
+            channelId: 'chan-123',
+            guildId: 'guild-123',
+            content: 'before',
+        } as PartialMessage;
+
+        const newMessage = {
+            id: 'msg-update-123',
+            channelId: 'chan-123',
+            guildId: 'guild-123',
+            content: 'after',
+            editedTimestamp: 1710451000000,
+            author: {
+                id: 'user-123',
+            },
+        } as PartialMessage;
+
+        const normalized = normalizeMessageUpdate(oldMessage, newMessage);
+
+        expect(normalized).toEqual({
+            type: 'MESSAGE_UPDATE',
+            timestamp: expect.any(Number),
+            messageId: 'msg-update-123',
+            channelId: 'chan-123',
+            serverId: 'guild-123',
+            userId: 'user-123',
+            authorId: 'user-123',
+            content: 'after',
+            editedAt: 1710451000000,
+        });
+    });
+
+    it('should normalize a partial updated message with sparse data', () => {
+        const oldMessage = {
+            id: 'msg-update-456',
+            channelId: 'chan-999',
+        } as PartialMessage;
+
+        const newMessage = {
+            id: 'msg-update-456',
+            channelId: 'chan-999',
+        } as PartialMessage;
+
+        const normalized = normalizeMessageUpdate(oldMessage, newMessage);
+
+        expect(normalized).toEqual({
+            type: 'MESSAGE_UPDATE',
+            timestamp: expect.any(Number),
+            messageId: 'msg-update-456',
+            channelId: 'chan-999',
+            serverId: undefined,
+            userId: undefined,
+            authorId: undefined,
+            content: undefined,
+            editedAt: undefined,
+        });
+    });
+
+    it('should throw for updated messages missing required identifiers', () => {
+        const oldMessage = {
+            id: 'msg-update-789',
+        } as PartialMessage;
+
+        const newMessage = {
+            id: 'msg-update-789',
+        } as PartialMessage;
+
+        expect(() => normalizeMessageUpdate(oldMessage, newMessage)).toThrow();
     });
 });

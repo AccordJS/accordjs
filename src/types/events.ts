@@ -9,6 +9,7 @@ import { z } from 'zod';
  */
 export const EventTypeSchema = z.enum([
     'MESSAGE_CREATE',
+    'MESSAGE_UPDATE',
     'MEMBER_JOIN',
     'MESSAGE_DELETE',
     'MEMBER_LEAVE',
@@ -69,6 +70,22 @@ export const MessageCreateEventSchema = ChannelEventSchema.extend({
 });
 
 export type MessageCreateEvent = z.infer<typeof MessageCreateEventSchema>;
+
+/**
+ * Normalized message update event schema
+ */
+export const MessageUpdateEventSchema = BaseEventSchema.extend({
+    type: z.literal('MESSAGE_UPDATE'),
+    messageId: z.string(),
+    channelId: z.string(),
+    serverId: z.string().optional(),
+    userId: z.string().optional(),
+    authorId: z.string().optional(),
+    content: z.string().optional(),
+    editedAt: z.number().int().positive().optional(),
+});
+
+export type MessageUpdateEvent = z.infer<typeof MessageUpdateEventSchema>;
 
 /**
  * Normalized member join event schema
@@ -180,6 +197,7 @@ export type CommandPermissionDeniedEvent = z.infer<typeof CommandPermissionDenie
  */
 export const BotEventSchema = z.discriminatedUnion('type', [
     MessageCreateEventSchema,
+    MessageUpdateEventSchema,
     MessageDeleteEventSchema,
     MemberJoinEventSchema,
     MemberLeaveEventSchema,
@@ -198,6 +216,7 @@ export type BotEvent = z.infer<typeof BotEventSchema>;
  */
 export const EventMapSchemas = {
     MESSAGE_CREATE: MessageCreateEventSchema,
+    MESSAGE_UPDATE: MessageUpdateEventSchema,
     MESSAGE_DELETE: MessageDeleteEventSchema,
     MEMBER_JOIN: MemberJoinEventSchema,
     MEMBER_LEAVE: MemberLeaveEventSchema,

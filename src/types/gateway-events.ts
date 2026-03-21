@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const GatewayEventSchema = z.enum([
     'messageCreate',
+    'messageUpdate',
     'messageDelete',
     'guildCreate',
     'guildDelete',
@@ -15,6 +16,7 @@ export const DEFAULT_GATEWAY_EVENTS = [...GatewayEventSchema.options];
 
 export const GATEWAY_EVENT_DESCRIPTIONS: Record<GatewayEvent, string> = {
     messageCreate: 'Discord.js gateway event for a newly created message.',
+    messageUpdate: 'Discord.js gateway event for an updated message.',
     messageDelete: 'Discord.js gateway event for a deleted message.',
     guildCreate: 'Discord.js gateway event for a guild becoming available to the client.',
     guildDelete: 'Discord.js gateway event for a guild becoming unavailable or inaccessible to the client.',
@@ -24,6 +26,7 @@ export const GATEWAY_EVENT_DESCRIPTIONS: Record<GatewayEvent, string> = {
 
 export const GATEWAY_TO_ACCORD_EVENT_MAP: Record<GatewayEvent, string> = {
     messageCreate: 'MESSAGE_CREATE',
+    messageUpdate: 'MESSAGE_UPDATE',
     messageDelete: 'MESSAGE_DELETE',
     guildCreate: 'GUILD_AVAILABLE',
     guildDelete: 'GUILD_UNAVAILABLE',

@@ -181,6 +181,9 @@ Methods:
 ### `normalizeMessage(message: Message): MessageCreateEvent`
 Converts Discord.js `Message` objects into validated internal events.
 
+### `normalizeMessageUpdate(oldMessage: Message | PartialMessage, newMessage: Message | PartialMessage): MessageUpdateEvent`
+Converts Discord.js `messageUpdate` payloads into validated generic message-update events, including partial payloads.
+
 ### `normalizeMessageDelete(message: Message | PartialMessage): MessageDeleteEvent`
 Converts Discord.js `messageDelete` payloads into validated internal delete events, including partial payloads.
 
@@ -206,6 +209,7 @@ Exported event schemas/types include:
 - `DiscordEventSchema`, `DiscordEvent`
 - `ChannelEventSchema`, `ChannelEvent`
 - `MessageCreateEventSchema`, `MessageCreateEvent`
+- `MessageUpdateEventSchema`, `MessageUpdateEvent`
 - `MemberJoinEventSchema`, `MemberJoinEvent`
 - `MessageDeleteEventSchema`, `MessageDeleteEvent`
 - `MemberLeaveEventSchema`, `MemberLeaveEvent`

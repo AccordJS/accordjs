@@ -7,6 +7,7 @@ import {
     MemberLeaveEventSchema,
     MessageCreateEventSchema,
     MessageDeleteEventSchema,
+    MessageUpdateEventSchema,
 } from '@app/types/index';
 
 describe('Foundational Zod Schemas', () => {
@@ -134,6 +135,36 @@ describe('Foundational Zod Schemas', () => {
 
             const result = MessageDeleteEventSchema.safeParse(invalidData);
             expect(result.success).toBe(false);
+        });
+    });
+
+    describe('MessageUpdateEventSchema', () => {
+        it('validates a valid message update event', () => {
+            const validData = {
+                type: 'MESSAGE_UPDATE',
+                timestamp: Date.now(),
+                messageId: '123',
+                channelId: '456',
+                userId: '789',
+                authorId: '789',
+                content: 'Updated content',
+                editedAt: Date.now(),
+            };
+
+            const result = MessageUpdateEventSchema.safeParse(validData);
+            expect(result.success).toBe(true);
+        });
+
+        it('validates a sparse message update event', () => {
+            const validData = {
+                type: 'MESSAGE_UPDATE',
+                timestamp: Date.now(),
+                messageId: '123',
+                channelId: '456',
+            };
+
+            const result = MessageUpdateEventSchema.safeParse(validData);
+            expect(result.success).toBe(true);
         });
     });
 
@@ -286,6 +317,19 @@ describe('Foundational Zod Schemas', () => {
                     expect(result.data.messageId).toBe('123');
                 }
             }
+        });
+
+        it('correctly validates a message update event', () => {
+            const data = {
+                type: 'MESSAGE_UPDATE',
+                timestamp: Date.now(),
+                messageId: '123',
+                channelId: '456',
+                content: 'Updated content',
+            };
+
+            const result = BotEventSchema.safeParse(data);
+            expect(result.success).toBe(true);
         });
 
         it('correctly validates a guild available event', () => {

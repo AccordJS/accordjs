@@ -27,6 +27,7 @@ A gateway event should be normalized into an AccordJS event when it is:
 Examples today:
 
 - `messageCreate` -> `MESSAGE_CREATE`
+- `messageUpdate` -> `MESSAGE_UPDATE`
 - `messageDelete` -> `MESSAGE_DELETE`
 - `guildCreate` -> `GUILD_AVAILABLE`
 - `guildDelete` -> `GUILD_UNAVAILABLE`
@@ -35,7 +36,6 @@ Examples today:
 
 Examples that may be added incrementally as bots need them:
 
-- `messageUpdate`
 - `presenceUpdate`
 - `interactionCreate`
 

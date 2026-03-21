@@ -55,6 +55,7 @@ describe('GatewayAdapter', () => {
         expect(disabledClient.handlers.has('guildDelete')).toBe(true);
         expect(disabledClient.handlers.get('guildDelete')).toHaveLength(1);
         expect(disabledClient.handlers.has('messageCreate')).toBe(true);
+        expect(disabledClient.handlers.has('messageUpdate')).toBe(true);
         expect(disabledClient.handlers.has('messageDelete')).toBe(true);
         expect(disabledClient.handlers.has('guildMemberAdd')).toBe(true);
         expect(disabledClient.handlers.has('guildMemberRemove')).toBe(true);
@@ -279,6 +280,57 @@ describe('GatewayAdapter', () => {
         );
     });
 
+    it('publishes MESSAGE_UPDATE when messageUpdate is enabled', () => {
+        const { client, handlers } = createClientStub();
+        const eventBus = createEventBusStub();
+        const adapter = new GatewayAdapter(client as never, eventBus, {
+            gatewayEvents: ['messageUpdate'],
+            logger: createLoggerStub(),
+        });
+
+        adapter.registerListeners();
+
+        expect(handlers.has('messageCreate')).toBe(false);
+        expect(handlers.has('messageUpdate')).toBe(true);
+        expect(handlers.has('messageDelete')).toBe(false);
+
+        const messageUpdateHandler = handlers.get('messageUpdate')?.[0];
+        expect(messageUpdateHandler).toBeDefined();
+
+        messageUpdateHandler?.(
+            {
+                id: 'message-7',
+                channelId: 'channel-7',
+                guildId: 'guild-7',
+                content: 'before',
+            },
+            {
+                id: 'message-7',
+                channelId: 'channel-7',
+                guildId: 'guild-7',
+                content: 'after',
+                editedTimestamp: 5000,
+                author: {
+                    id: 'user-7',
+                },
+            }
+        );
+
+        expect(eventBus.publish).toHaveBeenCalledWith(
+            'MESSAGE_UPDATE',
+            expect.objectContaining({
+                type: 'MESSAGE_UPDATE',
+                messageId: 'message-7',
+                channelId: 'channel-7',
+                serverId: 'guild-7',
+                userId: 'user-7',
+                authorId: 'user-7',
+                content: 'after',
+                editedAt: 5000,
+            })
+        );
+    });
+
     it('publishes MESSAGE_DELETE when messageDelete is enabled', () => {
         const { client, handlers } = createClientStub();
         const eventBus = createEventBusStub();
@@ -351,5 +403,22 @@ describe('GatewayAdapter', () => {
 
         expect(() => guildDeleteHandler?.({ id: 'guild-delete-bad' })).not.toThrow();
         expect(logger.error).toHaveBeenCalledWith(expect.anything(), 'Error normalizing guildDelete event');
+    });
+
+    it('logs messageUpdate normalization errors instead of throwing', () => {
+        const { client, handlers } = createClientStub();
+        const logger = createLoggerStub();
+        const adapter = new GatewayAdapter(client as never, createEventBusStub(), {
+            gatewayEvents: ['messageUpdate'],
+            logger,
+        });
+
+        adapter.registerListeners();
+
+        const messageUpdateHandler = handlers.get('messageUpdate')?.[0];
+        expect(messageUpdateHandler).toBeDefined();
+
+        expect(() => messageUpdateHandler?.({ id: 'message-9' }, { id: 'message-9' })).not.toThrow();
+        expect(logger.error).toHaveBeenCalledWith(expect.anything(), 'Error normalizing messageUpdate event');
     });
 });
