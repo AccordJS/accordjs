@@ -50,7 +50,10 @@ describe('GatewayAdapter', () => {
 
         disabledAdapter.registerListeners();
 
-        expect(disabledClient.handlers.has('guildCreate')).toBe(false);
+        expect(disabledClient.handlers.has('guildCreate')).toBe(true);
+        expect(disabledClient.handlers.get('guildCreate')).toHaveLength(1);
+        expect(disabledClient.handlers.has('guildDelete')).toBe(true);
+        expect(disabledClient.handlers.get('guildDelete')).toHaveLength(1);
         expect(disabledClient.handlers.has('messageCreate')).toBe(true);
         expect(disabledClient.handlers.has('messageDelete')).toBe(true);
         expect(disabledClient.handlers.has('guildMemberAdd')).toBe(true);
@@ -68,6 +71,7 @@ describe('GatewayAdapter', () => {
         enabledAdapter.registerListeners();
 
         expect(enabledClient.handlers.has('guildCreate')).toBe(true);
+        expect(enabledClient.handlers.get('guildCreate')).toHaveLength(2);
     });
 
     it('logs structured debug payloads for guildCreate', () => {
@@ -207,6 +211,74 @@ describe('GatewayAdapter', () => {
         );
     });
 
+    it('publishes GUILD_AVAILABLE when guildCreate is enabled', () => {
+        const { client, handlers } = createClientStub();
+        const eventBus = createEventBusStub();
+        const adapter = new GatewayAdapter(client as never, eventBus, {
+            gatewayEvents: ['guildCreate'],
+            logger: createLoggerStub(),
+        });
+
+        adapter.registerListeners();
+
+        expect(handlers.has('guildCreate')).toBe(true);
+        expect(handlers.has('guildDelete')).toBe(false);
+
+        const guildCreateHandler = handlers.get('guildCreate')?.[0];
+        expect(guildCreateHandler).toBeDefined();
+
+        guildCreateHandler?.({
+            id: 'guild-available-1',
+            name: 'Available Guild',
+            memberCount: 22,
+        });
+
+        expect(eventBus.publish).toHaveBeenCalledWith(
+            'GUILD_AVAILABLE',
+            expect.objectContaining({
+                type: 'GUILD_AVAILABLE',
+                serverId: 'guild-available-1',
+                guildName: 'Available Guild',
+                memberCount: 22,
+            })
+        );
+    });
+
+    it('publishes GUILD_UNAVAILABLE when guildDelete is enabled', () => {
+        const { client, handlers } = createClientStub();
+        const eventBus = createEventBusStub();
+        const adapter = new GatewayAdapter(client as never, eventBus, {
+            gatewayEvents: ['guildDelete'],
+            logger: createLoggerStub(),
+        });
+
+        adapter.registerListeners();
+
+        expect(handlers.has('guildCreate')).toBe(false);
+        expect(handlers.has('guildDelete')).toBe(true);
+
+        const guildDeleteHandler = handlers.get('guildDelete')?.[0];
+        expect(guildDeleteHandler).toBeDefined();
+
+        guildDeleteHandler?.({
+            id: 'guild-unavailable-1',
+            name: 'Unavailable Guild',
+            memberCount: 14,
+            unavailable: true,
+        });
+
+        expect(eventBus.publish).toHaveBeenCalledWith(
+            'GUILD_UNAVAILABLE',
+            expect.objectContaining({
+                type: 'GUILD_UNAVAILABLE',
+                serverId: 'guild-unavailable-1',
+                guildName: 'Unavailable Guild',
+                memberCount: 14,
+                unavailable: true,
+            })
+        );
+    });
+
     it('publishes MESSAGE_DELETE when messageDelete is enabled', () => {
         const { client, handlers } = createClientStub();
         const eventBus = createEventBusStub();
@@ -262,5 +334,22 @@ describe('GatewayAdapter', () => {
 
         expect(() => messageDeleteHandler?.({ id: 'message-3' })).not.toThrow();
         expect(logger.error).toHaveBeenCalledWith(expect.anything(), 'Error normalizing messageDelete event');
+    });
+
+    it('logs guildDelete normalization errors instead of throwing', () => {
+        const { client, handlers } = createClientStub();
+        const logger = createLoggerStub();
+        const adapter = new GatewayAdapter(client as never, createEventBusStub(), {
+            gatewayEvents: ['guildDelete'],
+            logger,
+        });
+
+        adapter.registerListeners();
+
+        const guildDeleteHandler = handlers.get('guildDelete')?.[0];
+        expect(guildDeleteHandler).toBeDefined();
+
+        expect(() => guildDeleteHandler?.({ id: 'guild-delete-bad' })).not.toThrow();
+        expect(logger.error).toHaveBeenCalledWith(expect.anything(), 'Error normalizing guildDelete event');
     });
 });

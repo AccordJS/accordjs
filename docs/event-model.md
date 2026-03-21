@@ -29,10 +29,10 @@ Important current behavior:
 | --- | --- | --- | --- |
 | `messageCreate` | A Discord message was created | `MESSAGE_CREATE` | Supported |
 | `messageDelete` | A message was deleted | `MESSAGE_DELETE` | Supported |
+| `guildCreate` | The guild is now available to the client | `GUILD_AVAILABLE` | Supported |
+| `guildDelete` | The guild is no longer available to the client | `GUILD_UNAVAILABLE` | Supported |
 | `guildMemberAdd` | A member joined a guild | `MEMBER_JOIN` | Supported |
 | `guildMemberRemove` | A member left or was removed from a guild | `MEMBER_LEAVE` | Supported |
-| `guildDelete` | The client lost access to a guild or the guild became unavailable to it | None | Not normalized |
-| `guildCreate` | The client joined or became available in a guild | None | Debug-only today |
 
 ## Debug-Capture Event Names
 
@@ -57,7 +57,8 @@ The current debug capture layer can log these Discord.js client event names with
 ## Semantic Traps
 
 - `guildDelete` does **not** mean "a member left the guild". For member departures, look at `guildMemberRemove` -> `MEMBER_LEAVE`.
-- `guildCreate` is about the bot client and a guild relationship, not a member joining.
+- `guildCreate` is normalized as `GUILD_AVAILABLE`, which is intentionally generic. Apps should infer "new install" versus reconnect from their own state.
+- `guildDelete` is normalized as `GUILD_UNAVAILABLE`, which is also intentionally generic. Apps can use the `unavailable` flag to distinguish outage-style loss from likely removal or loss of access.
 - `MEMBER_JOIN` and `MEMBER_LEAVE` are AccordJS event names. They are framework-facing, not Discord.js event names.
 
 ## Gateway Event Selection

@@ -21,6 +21,7 @@ export * from '@app/middleware/built-in';
 export * from '@app/middleware/middleware-runner';
 export * from '@app/middleware/types';
 // Event Normalization
+export * from '@app/normalizers/normalize-guild';
 export * from '@app/normalizers/normalize-member';
 export * from '@app/normalizers/normalize-message';
 export * from '@app/pipeline/event-pipeline';

@@ -28,6 +28,8 @@ Examples today:
 
 - `messageCreate` -> `MESSAGE_CREATE`
 - `messageDelete` -> `MESSAGE_DELETE`
+- `guildCreate` -> `GUILD_AVAILABLE`
+- `guildDelete` -> `GUILD_UNAVAILABLE`
 - `guildMemberAdd` -> `MEMBER_JOIN`
 - `guildMemberRemove` -> `MEMBER_LEAVE`
 
@@ -36,7 +38,6 @@ Examples that may be added incrementally as bots need them:
 - `messageUpdate`
 - `presenceUpdate`
 - `interactionCreate`
-- `guildCreate` with clearly defined AccordJS semantics
 
 ## What Does Not Need Normalization
 

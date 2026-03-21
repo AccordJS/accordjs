@@ -1,5 +1,6 @@
 import type { EventBus } from '@app/bus';
 import type { DiscordClientDebugConfig } from '@app/config';
+import { normalizeGuildAvailable, normalizeGuildUnavailable } from '@app/normalizers/normalize-guild';
 import { normalizeMemberJoin, normalizeMemberLeave } from '@app/normalizers/normalize-member';
 import { normalizeMessage, normalizeMessageDelete } from '@app/normalizers/normalize-message';
 import {
@@ -101,6 +102,26 @@ export class GatewayAdapter {
                             this.eventBus.publish('MEMBER_JOIN', event);
                         } catch (error) {
                             this.logger.error(error, 'Error normalizing guildMemberAdd event');
+                        }
+                    });
+                    break;
+                case 'guildCreate':
+                    this.client.on('guildCreate', (guild: Guild) => {
+                        try {
+                            const event = normalizeGuildAvailable(guild);
+                            this.eventBus.publish('GUILD_AVAILABLE', event);
+                        } catch (error) {
+                            this.logger.error(error, 'Error normalizing guildCreate event');
+                        }
+                    });
+                    break;
+                case 'guildDelete':
+                    this.client.on('guildDelete', (guild: Guild) => {
+                        try {
+                            const event = normalizeGuildUnavailable(guild);
+                            this.eventBus.publish('GUILD_UNAVAILABLE', event);
+                        } catch (error) {
+                            this.logger.error(error, 'Error normalizing guildDelete event');
                         }
                     });
                     break;

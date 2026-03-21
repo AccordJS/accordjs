@@ -15,6 +15,8 @@ export abstract class BasePlugin implements Plugin {
         onMemberJoin: 'MEMBER_JOIN',
         onMemberLeave: 'MEMBER_LEAVE',
         onMessageDelete: 'MESSAGE_DELETE',
+        onGuildAvailable: 'GUILD_AVAILABLE',
+        onGuildUnavailable: 'GUILD_UNAVAILABLE',
         onCommandDispatch: 'COMMAND_DISPATCH',
         onCommandExecute: 'COMMAND_EXECUTE',
         onCommandError: 'COMMAND_ERROR',

@@ -12,6 +12,8 @@ export const EventTypeSchema = z.enum([
     'MEMBER_JOIN',
     'MESSAGE_DELETE',
     'MEMBER_LEAVE',
+    'GUILD_AVAILABLE',
+    'GUILD_UNAVAILABLE',
     'COMMAND_DISPATCH',
     'COMMAND_EXECUTE',
     'COMMAND_ERROR',
@@ -108,6 +110,25 @@ export const MemberLeaveEventSchema = DiscordEventSchema.extend({
 
 export type MemberLeaveEvent = z.infer<typeof MemberLeaveEventSchema>;
 
+export const GuildAvailableEventSchema = BaseEventSchema.extend({
+    type: z.literal('GUILD_AVAILABLE'),
+    serverId: z.string(),
+    guildName: z.string(),
+    memberCount: z.number().int().nonnegative().optional(),
+});
+
+export type GuildAvailableEvent = z.infer<typeof GuildAvailableEventSchema>;
+
+export const GuildUnavailableEventSchema = BaseEventSchema.extend({
+    type: z.literal('GUILD_UNAVAILABLE'),
+    serverId: z.string(),
+    guildName: z.string(),
+    memberCount: z.number().int().nonnegative().optional(),
+    unavailable: z.boolean().optional(),
+});
+
+export type GuildUnavailableEvent = z.infer<typeof GuildUnavailableEventSchema>;
+
 /**
  * Normalized command dispatch event schema
  */
@@ -162,6 +183,8 @@ export const BotEventSchema = z.discriminatedUnion('type', [
     MessageDeleteEventSchema,
     MemberJoinEventSchema,
     MemberLeaveEventSchema,
+    GuildAvailableEventSchema,
+    GuildUnavailableEventSchema,
     CommandDispatchEventSchema,
     CommandExecuteEventSchema,
     CommandErrorEventSchema,
@@ -178,6 +201,8 @@ export const EventMapSchemas = {
     MESSAGE_DELETE: MessageDeleteEventSchema,
     MEMBER_JOIN: MemberJoinEventSchema,
     MEMBER_LEAVE: MemberLeaveEventSchema,
+    GUILD_AVAILABLE: GuildAvailableEventSchema,
+    GUILD_UNAVAILABLE: GuildUnavailableEventSchema,
     COMMAND_DISPATCH: CommandDispatchEventSchema,
     COMMAND_EXECUTE: CommandExecuteEventSchema,
     COMMAND_ERROR: CommandErrorEventSchema,

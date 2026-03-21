@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'bun:test';
 import {
     BotEventSchema,
+    GuildAvailableEventSchema,
+    GuildUnavailableEventSchema,
     MemberJoinEventSchema,
     MemberLeaveEventSchema,
     MessageCreateEventSchema,
@@ -187,6 +189,37 @@ describe('Foundational Zod Schemas', () => {
         });
     });
 
+    describe('GuildAvailableEventSchema', () => {
+        it('validates a valid guild available event', () => {
+            const validData = {
+                type: 'GUILD_AVAILABLE',
+                timestamp: Date.now(),
+                serverId: 'guild-123',
+                guildName: 'AccordJS Guild',
+                memberCount: 42,
+            };
+
+            const result = GuildAvailableEventSchema.safeParse(validData);
+            expect(result.success).toBe(true);
+        });
+    });
+
+    describe('GuildUnavailableEventSchema', () => {
+        it('validates a valid guild unavailable event', () => {
+            const validData = {
+                type: 'GUILD_UNAVAILABLE',
+                timestamp: Date.now(),
+                serverId: 'guild-123',
+                guildName: 'AccordJS Guild',
+                memberCount: 42,
+                unavailable: true,
+            };
+
+            const result = GuildUnavailableEventSchema.safeParse(validData);
+            expect(result.success).toBe(true);
+        });
+    });
+
     describe('BotEventSchema (Discriminated Union)', () => {
         it('correctly narrows and validates a message create event', () => {
             const data = {
@@ -253,6 +286,19 @@ describe('Foundational Zod Schemas', () => {
                     expect(result.data.messageId).toBe('123');
                 }
             }
+        });
+
+        it('correctly validates a guild available event', () => {
+            const data = {
+                type: 'GUILD_AVAILABLE',
+                timestamp: Date.now(),
+                serverId: 'guild-123',
+                guildName: 'AccordJS Guild',
+                memberCount: 42,
+            };
+
+            const result = BotEventSchema.safeParse(data);
+            expect(result.success).toBe(true);
         });
 
         it('fails on unknown event type in union', () => {

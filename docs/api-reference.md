@@ -184,6 +184,12 @@ Converts Discord.js `Message` objects into validated internal events.
 ### `normalizeMessageDelete(message: Message | PartialMessage): MessageDeleteEvent`
 Converts Discord.js `messageDelete` payloads into validated internal delete events, including partial payloads.
 
+### `normalizeGuildAvailable(guild: Guild): GuildAvailableEvent`
+Converts Discord.js `guildCreate` payloads into validated generic guild-availability events.
+
+### `normalizeGuildUnavailable(guild: Guild): GuildUnavailableEvent`
+Converts Discord.js `guildDelete` payloads into validated generic guild-unavailability events.
+
 ### `normalizeMemberJoin(member: GuildMember): MemberJoinEvent`
 Converts Discord.js `guildMemberAdd` payloads into validated internal member join events.
 
@@ -203,6 +209,8 @@ Exported event schemas/types include:
 - `MemberJoinEventSchema`, `MemberJoinEvent`
 - `MessageDeleteEventSchema`, `MessageDeleteEvent`
 - `MemberLeaveEventSchema`, `MemberLeaveEvent`
+- `GuildAvailableEventSchema`, `GuildAvailableEvent`
+- `GuildUnavailableEventSchema`, `GuildUnavailableEvent`
 - `CommandDispatchEventSchema`, `CommandDispatchEvent`
 - `CommandExecuteEventSchema`, `CommandExecuteEvent`
 - `CommandErrorEventSchema`, `CommandErrorEvent`
