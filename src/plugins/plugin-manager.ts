@@ -7,6 +7,11 @@ export interface PluginRegistrationOptions {
     handlerBindings?: EventHandlerMap;
 }
 
+export interface PluginRegistrationInput {
+    plugin: Plugin;
+    handlerBindings?: EventHandlerMap;
+}
+
 /**
  * Manager responsible for registering and orchestrating AccordJS plugins.
  *
@@ -76,12 +81,12 @@ export class PluginManager {
      *
      * @param plugins - Array of plugin instances.
      */
-    public async registerAll(
-        plugins: Array<Plugin | { plugin: Plugin; options?: PluginRegistrationOptions }>
-    ): Promise<void> {
+    public async registerAll(plugins: Array<Plugin | PluginRegistrationInput>): Promise<void> {
         for (const item of plugins) {
             if ('plugin' in item) {
-                await this.register(item.plugin, item.options);
+                await this.register(item.plugin, {
+                    handlerBindings: item.handlerBindings,
+                });
                 continue;
             }
 

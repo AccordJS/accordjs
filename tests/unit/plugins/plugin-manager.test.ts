@@ -85,4 +85,21 @@ describe('PluginManager', () => {
 
         expect(plugin.context?.handlerBindings).toEqual(handlerBindings);
     });
+
+    it('should preserve handler bindings when registerAll receives plugin registrations', async () => {
+        const manager = new PluginManager(mockBus, mockConfig);
+        const plugin = new TestPlugin('bulk-bound-plugin');
+        const handlerBindings: EventHandlerMap = {
+            handleDelete: 'MESSAGE_DELETE',
+        };
+
+        await manager.registerAll([
+            {
+                plugin,
+                handlerBindings,
+            },
+        ]);
+
+        expect(plugin.context?.handlerBindings).toEqual(handlerBindings);
+    });
 });

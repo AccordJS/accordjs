@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { normalizeMember, normalizeMemberLeave } from '@app/normalizers/normalize-member';
+import { normalizeMemberJoin, normalizeMemberLeave } from '@app/normalizers/normalize-member';
 import type { Guild, GuildMember, PartialGuildMember, User } from 'discord.js';
 import { ZodError } from 'zod';
 
@@ -21,7 +21,7 @@ describe('Member Join Normalization', () => {
             joinedTimestamp: 1710450000000,
         } as GuildMember;
 
-        const normalized = normalizeMember(mockMember);
+        const normalized = normalizeMemberJoin(mockMember);
 
         expect(normalized.type).toBe('MEMBER_JOIN');
         expect(normalized.userId).toBe('user-789');
@@ -48,7 +48,7 @@ describe('Member Join Normalization', () => {
         } as GuildMember;
 
         const beforeCall = Date.now();
-        const normalized = normalizeMember(mockMember);
+        const normalized = normalizeMemberJoin(mockMember);
         const afterCall = Date.now();
 
         expect(normalized.joinedAt).toBeGreaterThanOrEqual(beforeCall);
@@ -64,10 +64,10 @@ describe('Member Join Normalization', () => {
             // Missing guild and user - this will cause TypeError when accessing .guild.id
         } as unknown as GuildMember;
 
-        expect(() => normalizeMember(mockMember)).toThrow(TypeError);
+        expect(() => normalizeMemberJoin(mockMember)).toThrow(TypeError);
         // The specific error message can vary between environments (Node.js vs Bun)
         // Just verify it's a TypeError related to accessing properties on undefined
-        expect(() => normalizeMember(mockMember)).toThrow(/undefined.*id|guild.*id/);
+        expect(() => normalizeMemberJoin(mockMember)).toThrow(/undefined.*id|guild.*id/);
     });
 
     it('should throw ZodError when invalid data types are provided', () => {
@@ -78,7 +78,7 @@ describe('Member Join Normalization', () => {
             joinedTimestamp: null,
         } as unknown as GuildMember;
 
-        expect(() => normalizeMember(mockMember)).toThrow(ZodError);
+        expect(() => normalizeMemberJoin(mockMember)).toThrow(ZodError);
     });
 });
 

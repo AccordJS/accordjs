@@ -134,7 +134,7 @@ new PluginManager(eventBus: EventBus, config: Config)
 
 Methods:
 - `register(plugin: Plugin, options?: PluginRegistrationOptions): Promise<void>`
-- `registerAll(plugins: Array<Plugin | { plugin: Plugin; options?: PluginRegistrationOptions }>): Promise<void>`
+- `registerAll(plugins: Array<Plugin | PluginRegistrationInput>): Promise<void>`
 - `getPlugins(): string[]`
 
 ## Command Plugin APIs
@@ -183,9 +183,6 @@ Converts Discord.js `Message` objects into validated internal events.
 
 ### `normalizeMessageDelete(message: Message | PartialMessage): MessageDeleteEvent`
 Converts Discord.js `messageDelete` payloads into validated internal delete events, including partial payloads.
-
-### `normalizeMember(member: GuildMember): MemberJoinEvent`
-Alias for `normalizeMemberJoin()`.
 
 ### `normalizeMemberJoin(member: GuildMember): MemberJoinEvent`
 Converts Discord.js `guildMemberAdd` payloads into validated internal member join events.

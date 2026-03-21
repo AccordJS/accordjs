@@ -36,15 +36,17 @@ export const normalizeMessage = (message: Message): MessageCreateEvent => {
  * @returns Validated, normalized MessageDeleteEvent.
  */
 export const normalizeMessageDelete = (message: Message | PartialMessage): MessageDeleteEvent => {
+    const deletedAt = Date.now();
+
     const rawEvent = {
         type: 'MESSAGE_DELETE',
-        timestamp: Date.now(),
+        timestamp: deletedAt,
         messageId: message.id,
         channelId: message.channelId,
         userId: message.author?.id,
         serverId: message.guildId ?? undefined,
         authorId: message.author?.id,
-        deletedAt: Date.now(),
+        deletedAt,
     };
 
     return MessageDeleteEventSchema.parse(rawEvent);

@@ -44,5 +44,3 @@ export const normalizeMemberLeave = (member: GuildMemberLike): MemberLeaveEvent 
 
     return MemberLeaveEventSchema.parse(rawEvent);
 };
-
-export const normalizeMember = normalizeMemberJoin;
