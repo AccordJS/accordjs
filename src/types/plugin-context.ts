@@ -1,5 +1,6 @@
 import type { EventBus } from '@app/bus/types';
 import type { Config } from '@app/config';
+import type { EventHandlerMap } from '@app/types/events';
 import type { Logger } from 'pino';
 
 /**
@@ -23,4 +24,10 @@ export interface PluginContext {
      * A logger instance configured for the plugin.
      */
     readonly logger: Logger;
+
+    /**
+     * Optional explicit handler bindings supplied by app bootstrap code.
+     * When present, these override plugin-owned eventMap conventions.
+     */
+    readonly handlerBindings?: EventHandlerMap;
 }

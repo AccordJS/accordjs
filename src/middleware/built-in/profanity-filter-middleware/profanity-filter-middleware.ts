@@ -1,15 +1,6 @@
 import { BaseMiddleware } from '@app/middleware/base-middleware';
 import type { BotEvent } from '@app/types';
-
-export type ProfanityAction = 'flag' | 'block' | 'replace';
-
-export interface ProfanityFilterOptions {
-    bannedWords: string[];
-    action?: ProfanityAction;
-    replacement?: string;
-    caseSensitive?: boolean;
-    matchWholeWord?: boolean;
-}
+import type { ProfanityAction, ProfanityFilterOptions } from './types';
 
 const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 

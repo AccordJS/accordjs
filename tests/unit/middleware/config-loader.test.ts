@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'bun:test';
-import { type Config, DEFAULT_DEBUG_CONFIG, DEFAULT_MIDDLEWARE_CONFIG } from '@app/config';
 import {
     BotFilterMiddleware,
+    type BuiltInMiddlewareConfig,
+    DEFAULT_BUILT_IN_MIDDLEWARE_CONFIG,
     LoggerMiddleware,
     MetricsMiddleware,
     ProfanityFilterMiddleware,
@@ -9,26 +10,17 @@ import {
 } from '@app/middleware/built-in';
 import { loadGlobalMiddleware } from '@app/middleware/config-loader';
 
-const baseConfig: Config = {
-    env: 'test',
-    log: { level: 'info' },
-    discord: { token: 'x', clientId: 'y' },
-    middleware: DEFAULT_MIDDLEWARE_CONFIG,
-    debug: DEFAULT_DEBUG_CONFIG,
-};
+const baseConfig: BuiltInMiddlewareConfig = DEFAULT_BUILT_IN_MIDDLEWARE_CONFIG;
 
 describe('loadGlobalMiddleware', () => {
     it('returns empty array when all middleware disabled', () => {
-        const config: Config = {
-            ...baseConfig,
-            middleware: {
-                global: {
-                    botFilter: { enabled: false },
-                    rateLimiter: { ...DEFAULT_MIDDLEWARE_CONFIG.global.rateLimiter, enabled: false },
-                    profanityFilter: { ...DEFAULT_MIDDLEWARE_CONFIG.global.profanityFilter, enabled: false },
-                    logger: { ...DEFAULT_MIDDLEWARE_CONFIG.global.logger, enabled: false },
-                    metrics: { ...DEFAULT_MIDDLEWARE_CONFIG.global.metrics, enabled: false },
-                },
+        const config: BuiltInMiddlewareConfig = {
+            global: {
+                botFilter: { enabled: false },
+                rateLimiter: { ...baseConfig.global.rateLimiter, enabled: false },
+                profanityFilter: { ...baseConfig.global.profanityFilter, enabled: false },
+                logger: { ...baseConfig.global.logger, enabled: false },
+                metrics: { ...baseConfig.global.metrics, enabled: false },
             },
         };
 
@@ -37,27 +29,24 @@ describe('loadGlobalMiddleware', () => {
     });
 
     it('enables selected middleware and preserves order', () => {
-        const config: Config = {
-            ...baseConfig,
-            middleware: {
-                global: {
-                    botFilter: { enabled: true },
-                    rateLimiter: {
-                        ...DEFAULT_MIDDLEWARE_CONFIG.global.rateLimiter,
-                        enabled: true,
-                        windowMs: 1000,
-                        maxEvents: 5,
-                        block: true,
-                        key: 'userId',
-                    },
-                    profanityFilter: {
-                        ...DEFAULT_MIDDLEWARE_CONFIG.global.profanityFilter,
-                        enabled: true,
-                        bannedWords: ['spam'],
-                    },
-                    logger: { ...DEFAULT_MIDDLEWARE_CONFIG.global.logger, enabled: true },
-                    metrics: { ...DEFAULT_MIDDLEWARE_CONFIG.global.metrics, enabled: true },
+        const config: BuiltInMiddlewareConfig = {
+            global: {
+                botFilter: { enabled: true },
+                rateLimiter: {
+                    ...baseConfig.global.rateLimiter,
+                    enabled: true,
+                    windowMs: 1000,
+                    maxEvents: 5,
+                    block: true,
+                    key: 'userId',
                 },
+                profanityFilter: {
+                    ...baseConfig.global.profanityFilter,
+                    enabled: true,
+                    bannedWords: ['spam'],
+                },
+                logger: { ...baseConfig.global.logger, enabled: true },
+                metrics: { ...baseConfig.global.metrics, enabled: true },
             },
         };
 
@@ -71,20 +60,17 @@ describe('loadGlobalMiddleware', () => {
     });
 
     it('passes rate limiter options through to instance', () => {
-        const config: Config = {
-            ...baseConfig,
-            middleware: {
-                global: {
-                    ...DEFAULT_MIDDLEWARE_CONFIG.global,
-                    rateLimiter: {
-                        ...DEFAULT_MIDDLEWARE_CONFIG.global.rateLimiter,
-                        enabled: true,
-                        windowMs: 2000,
-                        maxEvents: 3,
-                        block: false,
-                        pruneIntervalMs: 500,
-                        key: 'channelId',
-                    },
+        const config: BuiltInMiddlewareConfig = {
+            global: {
+                ...baseConfig.global,
+                rateLimiter: {
+                    ...baseConfig.global.rateLimiter,
+                    enabled: true,
+                    windowMs: 2000,
+                    maxEvents: 3,
+                    block: false,
+                    pruneIntervalMs: 500,
+                    key: 'channelId',
                 },
             },
         };

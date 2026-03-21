@@ -214,11 +214,11 @@ Discord Event → Global Middleware → Plugin Selection → Plugin Middleware �
 **Goal:** Provide common middleware implementations as reusable class components
 
 **Files to Create:**
-- `src/middleware/built-in/rate-limiter-middleware.ts` - Rate limiting middleware class
-- `src/middleware/built-in/profanity-filter-middleware.ts` - Content filtering middleware class
-- `src/middleware/built-in/logger-middleware.ts` - Event logging middleware class
-- `src/middleware/built-in/metrics-middleware.ts` - Performance metrics middleware class
-- `src/middleware/built-in/bot-filter-middleware.ts` - Bot message filtering middleware class
+- `src/middleware/built-in/rate-limiter-middleware/` - Rate limiting middleware module
+- `src/middleware/built-in/profanity-filter-middleware/` - Content filtering middleware module
+- `src/middleware/built-in/logger-middleware/` - Event logging middleware module
+- `src/middleware/built-in/metrics-middleware/` - Performance metrics middleware module
+- `src/middleware/built-in/bot-filter-middleware/` - Bot message filtering middleware module
 - `src/middleware/built-in/index.ts` - Built-in middleware exports
 
 **Tests to Create:**

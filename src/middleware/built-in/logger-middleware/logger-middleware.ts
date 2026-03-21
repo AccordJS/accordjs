@@ -1,21 +1,12 @@
 import { BaseMiddleware } from '@app/middleware/base-middleware';
 import type { BotEvent } from '@app/types';
 import { createLogger } from '@app/utils/create-logger';
-import type { Logger } from 'pino';
-
-export type LogLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
-
-export interface LoggerMiddlewareOptions {
-    logLevel?: LogLevel;
-    includeContent?: boolean;
-    sensitiveFields?: string[];
-    logger?: Logger;
-}
+import type { LoggerMiddlewareOptions, LogLevel } from './types';
 
 const redactField = '[REDACTED]';
 
 export class LoggerMiddleware<TEvent = BotEvent> extends BaseMiddleware<TEvent> {
-    private logger: Logger;
+    private logger;
     private level: LogLevel;
     private includeContent: boolean;
     private sensitiveFields: Set<string>;

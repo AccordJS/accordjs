@@ -106,6 +106,19 @@ describe('Foundational Zod Schemas', () => {
             }
         });
 
+        it('validates a message delete event without author details', () => {
+            const validData = {
+                type: 'MESSAGE_DELETE',
+                timestamp: Date.now(),
+                messageId: '123',
+                channelId: '456',
+                deletedAt: Date.now(),
+            };
+
+            const result = MessageDeleteEventSchema.safeParse(validData);
+            expect(result.success).toBe(true);
+        });
+
         it('fails when required fields are missing', () => {
             const invalidData = {
                 type: 'MESSAGE_DELETE',

@@ -1,7 +1,16 @@
 import type { EventBus } from '@app/bus/types';
 import type { Config } from '@app/config';
-import type { Plugin, PluginContext } from '@app/types';
+import type { EventHandlerMap, Plugin, PluginContext } from '@app/types';
 import { createLogger } from '@app/utils/create-logger';
+
+export interface PluginRegistrationOptions {
+    handlerBindings?: EventHandlerMap;
+}
+
+export interface PluginRegistrationInput {
+    plugin: Plugin;
+    handlerBindings?: EventHandlerMap;
+}
 
 /**
  * Manager responsible for registering and orchestrating AccordJS plugins.
@@ -45,7 +54,7 @@ export class PluginManager {
      * @param plugin - The plugin instance to register.
      * @throws Error if plugin registration fails.
      */
-    public async register(plugin: Plugin): Promise<void> {
+    public async register(plugin: Plugin, options: PluginRegistrationOptions = {}): Promise<void> {
         if (this.plugins.has(plugin.name)) {
             this.logger.warn(`Plugin '${plugin.name}' is already registered. Skipping.`);
             return;
@@ -54,6 +63,7 @@ export class PluginManager {
         const context: PluginContext = {
             eventBus: this.eventBus,
             config: this.config,
+            handlerBindings: options.handlerBindings,
             logger: createLogger(`Plugin:${plugin.name}`),
         };
 
@@ -71,9 +81,16 @@ export class PluginManager {
      *
      * @param plugins - Array of plugin instances.
      */
-    public async registerAll(plugins: Plugin[]): Promise<void> {
-        for (const plugin of plugins) {
-            await this.register(plugin);
+    public async registerAll(plugins: Array<Plugin | PluginRegistrationInput>): Promise<void> {
+        for (const item of plugins) {
+            if ('plugin' in item) {
+                await this.register(item.plugin, {
+                    handlerBindings: item.handlerBindings,
+                });
+                continue;
+            }
+
+            await this.register(item);
         }
     }
 

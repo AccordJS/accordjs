@@ -1,16 +1,32 @@
 import type { EventBus } from '@app/bus';
 import type { DiscordClientDebugConfig } from '@app/config';
-import { normalizeMember } from '@app/events/normalize-member';
-import { normalizeMessage } from '@app/events/normalize-message';
-import { DEFAULT_DISCORD_CLIENT_DEBUG_EVENTS, type DiscordClientDebugEvent } from '@app/types';
+import { normalizeMemberJoin, normalizeMemberLeave } from '@app/normalizers/normalize-member';
+import { normalizeMessage, normalizeMessageDelete } from '@app/normalizers/normalize-message';
+import {
+    DEFAULT_DISCORD_CLIENT_DEBUG_EVENTS,
+    DEFAULT_GATEWAY_EVENTS,
+    type DiscordClientDebugEvent,
+    type GatewayEvent,
+} from '@app/types';
 import { createLogger } from '@app/utils/create-logger';
-import type { Client, Guild, GuildMember, Interaction, Message, Presence, VoiceState } from 'discord.js';
+import type {
+    Client,
+    Guild,
+    GuildMember,
+    Interaction,
+    Message,
+    PartialGuildMember,
+    PartialMessage,
+    Presence,
+    VoiceState,
+} from 'discord.js';
 import type { Logger } from 'pino';
 
 type DebuggableDiscordClientEvent = DiscordClientDebugEvent;
 
 export interface GatewayAdapterOptions {
     debug?: DiscordClientDebugConfig;
+    gatewayEvents?: readonly GatewayEvent[];
     logger?: Logger;
 }
 
@@ -40,6 +56,7 @@ export class GatewayAdapter {
     protected eventBus: EventBus;
     protected logger: Logger;
     protected debugConfig: DiscordClientDebugConfig;
+    protected gatewayEvents: GatewayEvent[];
 
     /**
      * @param client - The initialized Discord.js client.
@@ -53,6 +70,7 @@ export class GatewayAdapter {
             enabled: options.debug?.enabled ?? DEFAULT_DEBUG_OPTIONS.enabled,
             events: options.debug?.events ?? [...DEFAULT_DEBUG_OPTIONS.events],
         };
+        this.gatewayEvents = [...(options.gatewayEvents ?? DEFAULT_GATEWAY_EVENTS)];
     }
 
     /**
@@ -60,24 +78,54 @@ export class GatewayAdapter {
      */
     public registerListeners(): void {
         this.registerDebugListeners();
+        this.registerGatewayListeners();
+    }
 
-        this.client.on('messageCreate', (message: Message) => {
-            try {
-                const event = normalizeMessage(message);
-                this.eventBus.publish('MESSAGE_CREATE', event);
-            } catch (error) {
-                this.logger.error(error, 'Error normalizing messageCreate event');
+    protected registerGatewayListeners(): void {
+        for (const eventName of this.gatewayEvents) {
+            switch (eventName) {
+                case 'messageCreate':
+                    this.client.on('messageCreate', (message: Message) => {
+                        try {
+                            const event = normalizeMessage(message);
+                            this.eventBus.publish('MESSAGE_CREATE', event);
+                        } catch (error) {
+                            this.logger.error(error, 'Error normalizing messageCreate event');
+                        }
+                    });
+                    break;
+                case 'guildMemberAdd':
+                    this.client.on('guildMemberAdd', (member: GuildMember) => {
+                        try {
+                            const event = normalizeMemberJoin(member);
+                            this.eventBus.publish('MEMBER_JOIN', event);
+                        } catch (error) {
+                            this.logger.error(error, 'Error normalizing guildMemberAdd event');
+                        }
+                    });
+                    break;
+                case 'messageDelete':
+                    this.client.on('messageDelete', (message: Message | PartialMessage) => {
+                        try {
+                            const event = normalizeMessageDelete(message);
+                            this.eventBus.publish('MESSAGE_DELETE', event);
+                        } catch (error) {
+                            this.logger.error(error, 'Error normalizing messageDelete event');
+                        }
+                    });
+                    break;
+                case 'guildMemberRemove':
+                    this.client.on('guildMemberRemove', (member: GuildMember | PartialGuildMember) => {
+                        try {
+                            const event = normalizeMemberLeave(member);
+                            this.eventBus.publish('MEMBER_LEAVE', event);
+                        } catch (error) {
+                            this.logger.error(error, 'Error normalizing guildMemberRemove event');
+                        }
+                    });
+                    break;
             }
-        });
-
-        this.client.on('guildMemberAdd', (member: GuildMember) => {
-            try {
-                const event = normalizeMember(member);
-                this.eventBus.publish('MEMBER_JOIN', event);
-            } catch (error) {
-                this.logger.error(error, 'Error normalizing guildMemberAdd event');
-            }
-        });
+        }
     }
 
     protected registerDebugListeners(): void {

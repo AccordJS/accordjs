@@ -1,5 +1,5 @@
 import type { EventMiddleware } from '@app/middleware/types';
-import type { EventHandlerMap, Plugin, PluginContext } from '@app/types/index';
+import type { EventHandlerMap, Plugin, PluginContext } from '@app/types';
 import { registerMappedHandlers } from './event-mapper';
 import { PluginMiddlewareManager } from './plugin-middleware-manager';
 
@@ -61,10 +61,11 @@ export abstract class BasePlugin implements Plugin {
     public async register(ctx: PluginContext): Promise<void> {
         this.context = ctx;
         await this.onRegister();
-        registerMappedHandlers(this, ctx.eventBus, this.eventMap, {
+        const handlerBindings = ctx.handlerBindings ?? this.eventMap;
+        registerMappedHandlers(this, ctx.eventBus, handlerBindings, {
             logger: ctx.logger,
             getMiddleware: () => this.middlewareManager.list(),
-            suppressMissingHandlers: this.eventMap === BasePlugin.defaultEventMap,
+            suppressMissingHandlers: handlerBindings === BasePlugin.defaultEventMap,
         });
         this.context.logger.info(`Plugin '${this.name}' registered successfully.`);
     }

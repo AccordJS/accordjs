@@ -1,20 +1,10 @@
-import { createDiscordClient } from '@app/bot/client';
-import { GatewayAdapter } from '@app/bot/gateway';
-import { InMemoryEventBus } from '@app/bus/in-memory-event-bus';
+import { createAccordJsApp } from '@app/app/bootstrap';
 import { createConfig } from '@app/config';
-import { loadGlobalMiddleware } from '@app/middleware/config-loader';
+import { BotFilterMiddleware, LoggerMiddleware } from '@app/middleware/built-in';
 import { type Command, type CommandContext, CommandRouterPlugin, InMemoryCommandRegistry } from '@app/plugins/commands';
-import { PluginManager } from '@app/plugins/plugin-manager';
 
-// Load configuration (includes global middleware settings)
+// Load plain runtime configuration.
 const config = createConfig();
-
-// Initialize event bus and global middleware
-const eventBus = new InMemoryEventBus();
-const globalMiddleware = loadGlobalMiddleware(config);
-if (globalMiddleware.length > 0) {
-    eventBus.addMiddleware(globalMiddleware);
-}
 
 // Register commands
 const registry = new InMemoryCommandRegistry();
@@ -27,14 +17,23 @@ const pingCommand: Command = {
 };
 registry.register(pingCommand);
 
-// Register plugins
-const pluginManager = new PluginManager(eventBus, config);
-await pluginManager.register(new CommandRouterPlugin(registry, '!'));
+const _app = await createAccordJsApp({
+    config,
+    middleware: [
+        new BotFilterMiddleware(),
+        new LoggerMiddleware({
+            includeContent: false,
+            logLevel: config.log.level,
+            sensitiveFields: [],
+        }),
+    ],
+    plugins: [
+        {
+            plugin: new CommandRouterPlugin(registry, '!'),
+        },
+    ],
+    gatewayEvents: ['messageCreate'],
+});
 
-// Wire Discord gateway (optional for headless testing)
-const client = createDiscordClient();
-const gateway = new GatewayAdapter(client, eventBus);
-gateway.registerListeners();
-
-// In production you would call client.login(config.discord.token);
+// In production you would call app.start();
 // For a dry-run / test harness, skip login.
