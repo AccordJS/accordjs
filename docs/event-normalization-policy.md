@@ -29,6 +29,7 @@ Examples today:
 - `messageCreate` -> `MESSAGE_CREATE`
 - `messageUpdate` -> `MESSAGE_UPDATE`
 - `messageDelete` -> `MESSAGE_DELETE`
+- `presenceUpdate` -> `PRESENCE_UPDATE`
 - `guildCreate` -> `GUILD_AVAILABLE`
 - `guildDelete` -> `GUILD_UNAVAILABLE`
 - `guildMemberAdd` -> `MEMBER_JOIN`
@@ -36,7 +37,6 @@ Examples today:
 
 Examples that may be added incrementally as bots need them:
 
-- `presenceUpdate`
 - `interactionCreate`
 
 ## What Does Not Need Normalization

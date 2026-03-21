@@ -10,6 +10,7 @@ import { z } from 'zod';
 export const EventTypeSchema = z.enum([
     'MESSAGE_CREATE',
     'MESSAGE_UPDATE',
+    'PRESENCE_UPDATE',
     'MEMBER_JOIN',
     'MESSAGE_DELETE',
     'MEMBER_LEAVE',
@@ -57,6 +58,16 @@ export const ChannelEventSchema = DiscordEventSchema.extend({
 
 export type ChannelEvent = z.infer<typeof ChannelEventSchema>;
 
+const PresenceStatusValueSchema = z.string();
+
+export const ClientStatusSnapshotSchema = z.object({
+    desktop: PresenceStatusValueSchema.optional(),
+    mobile: PresenceStatusValueSchema.optional(),
+    web: PresenceStatusValueSchema.optional(),
+});
+
+export type ClientStatusSnapshot = z.infer<typeof ClientStatusSnapshotSchema>;
+
 /**
  * Normalized message creation event schema
  */
@@ -86,6 +97,26 @@ export const MessageUpdateEventSchema = BaseEventSchema.extend({
 });
 
 export type MessageUpdateEvent = z.infer<typeof MessageUpdateEventSchema>;
+
+/**
+ * Normalized presence update event schema
+ */
+export const PresenceUpdateEventSchema = BaseEventSchema.extend({
+    type: z.literal('PRESENCE_UPDATE'),
+    occurredAt: z.number().int().positive(),
+    userId: z.string(),
+    serverId: z.string(),
+    oldStatus: PresenceStatusValueSchema.optional(),
+    newStatus: PresenceStatusValueSchema,
+    oldClientStatus: ClientStatusSnapshotSchema.optional(),
+    newClientStatus: ClientStatusSnapshotSchema,
+    oldActivityNames: z.array(z.string()).optional(),
+    newActivityNames: z.array(z.string()),
+    oldActivityTypes: z.array(z.number().int().nonnegative()).optional(),
+    newActivityTypes: z.array(z.number().int().nonnegative()),
+});
+
+export type PresenceUpdateEvent = z.infer<typeof PresenceUpdateEventSchema>;
 
 /**
  * Normalized member join event schema
@@ -198,6 +229,7 @@ export type CommandPermissionDeniedEvent = z.infer<typeof CommandPermissionDenie
 export const BotEventSchema = z.discriminatedUnion('type', [
     MessageCreateEventSchema,
     MessageUpdateEventSchema,
+    PresenceUpdateEventSchema,
     MessageDeleteEventSchema,
     MemberJoinEventSchema,
     MemberLeaveEventSchema,
@@ -217,6 +249,7 @@ export type BotEvent = z.infer<typeof BotEventSchema>;
 export const EventMapSchemas = {
     MESSAGE_CREATE: MessageCreateEventSchema,
     MESSAGE_UPDATE: MessageUpdateEventSchema,
+    PRESENCE_UPDATE: PresenceUpdateEventSchema,
     MESSAGE_DELETE: MessageDeleteEventSchema,
     MEMBER_JOIN: MemberJoinEventSchema,
     MEMBER_LEAVE: MemberLeaveEventSchema,

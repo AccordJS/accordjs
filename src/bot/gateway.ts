@@ -3,6 +3,7 @@ import type { DiscordClientDebugConfig } from '@app/config';
 import { normalizeGuildAvailable, normalizeGuildUnavailable } from '@app/normalizers/normalize-guild';
 import { normalizeMemberJoin, normalizeMemberLeave } from '@app/normalizers/normalize-member';
 import { normalizeMessage, normalizeMessageDelete, normalizeMessageUpdate } from '@app/normalizers/normalize-message';
+import { normalizePresenceUpdate } from '@app/normalizers/normalize-presence';
 import {
     DEFAULT_DISCORD_CLIENT_DEBUG_EVENTS,
     DEFAULT_GATEWAY_EVENTS,
@@ -127,6 +128,16 @@ export class GatewayAdapter {
                             }
                         }
                     );
+                    break;
+                case 'presenceUpdate':
+                    this.client.on('presenceUpdate', (oldPresence: Presence | null, newPresence: Presence) => {
+                        try {
+                            const event = normalizePresenceUpdate(oldPresence, newPresence);
+                            this.eventBus.publish('PRESENCE_UPDATE', event);
+                        } catch (error) {
+                            this.logger.error(error, 'Error normalizing presenceUpdate event');
+                        }
+                    });
                     break;
                 case 'guildDelete':
                     this.client.on('guildDelete', (guild: Guild) => {

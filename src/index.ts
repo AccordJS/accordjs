@@ -24,6 +24,7 @@ export * from '@app/middleware/types';
 export * from '@app/normalizers/normalize-guild';
 export * from '@app/normalizers/normalize-member';
 export * from '@app/normalizers/normalize-message';
+export * from '@app/normalizers/normalize-presence';
 export * from '@app/pipeline/event-pipeline';
 export * from '@app/pipeline/pipeline-context';
 // Plugin System

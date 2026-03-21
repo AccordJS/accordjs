@@ -57,6 +57,7 @@ describe('GatewayAdapter', () => {
         expect(disabledClient.handlers.has('messageCreate')).toBe(true);
         expect(disabledClient.handlers.has('messageUpdate')).toBe(true);
         expect(disabledClient.handlers.has('messageDelete')).toBe(true);
+        expect(disabledClient.handlers.has('presenceUpdate')).toBe(true);
         expect(disabledClient.handlers.has('guildMemberAdd')).toBe(true);
         expect(disabledClient.handlers.has('guildMemberRemove')).toBe(true);
 
@@ -331,6 +332,53 @@ describe('GatewayAdapter', () => {
         );
     });
 
+    it('publishes PRESENCE_UPDATE when presenceUpdate is enabled', () => {
+        const { client, handlers } = createClientStub();
+        const eventBus = createEventBusStub();
+        const adapter = new GatewayAdapter(client as never, eventBus, {
+            gatewayEvents: ['presenceUpdate'],
+            logger: createLoggerStub(),
+        });
+
+        adapter.registerListeners();
+
+        expect(handlers.has('presenceUpdate')).toBe(true);
+        expect(handlers.has('messageCreate')).toBe(false);
+
+        const presenceUpdateHandler = handlers.get('presenceUpdate')?.[0];
+        expect(presenceUpdateHandler).toBeDefined();
+
+        presenceUpdateHandler?.(
+            {
+                userId: 'user-5',
+                status: 'offline',
+                guild: { id: 'guild-5' },
+                clientStatus: { web: 'offline' },
+                activities: [{ name: 'Before', type: 0 }],
+            },
+            {
+                userId: 'user-5',
+                status: 'online',
+                guild: { id: 'guild-5' },
+                clientStatus: { desktop: 'online' },
+                activities: [{ name: 'After', type: 2 }],
+            }
+        );
+
+        expect(eventBus.publish).toHaveBeenCalledWith(
+            'PRESENCE_UPDATE',
+            expect.objectContaining({
+                type: 'PRESENCE_UPDATE',
+                userId: 'user-5',
+                serverId: 'guild-5',
+                oldStatus: 'offline',
+                newStatus: 'online',
+                newActivityNames: ['After'],
+                newActivityTypes: [2],
+            })
+        );
+    });
+
     it('publishes MESSAGE_DELETE when messageDelete is enabled', () => {
         const { client, handlers } = createClientStub();
         const eventBus = createEventBusStub();
@@ -420,5 +468,28 @@ describe('GatewayAdapter', () => {
 
         expect(() => messageUpdateHandler?.({ id: 'message-9' }, { id: 'message-9' })).not.toThrow();
         expect(logger.error).toHaveBeenCalledWith(expect.anything(), 'Error normalizing messageUpdate event');
+    });
+
+    it('logs presenceUpdate normalization errors instead of throwing', () => {
+        const { client, handlers } = createClientStub();
+        const logger = createLoggerStub();
+        const adapter = new GatewayAdapter(client as never, createEventBusStub(), {
+            gatewayEvents: ['presenceUpdate'],
+            logger,
+        });
+
+        adapter.registerListeners();
+
+        const presenceUpdateHandler = handlers.get('presenceUpdate')?.[0];
+        expect(presenceUpdateHandler).toBeDefined();
+
+        expect(() =>
+            presenceUpdateHandler?.(null, {
+                userId: 'user-6',
+                status: 'online',
+                activities: [],
+            })
+        ).not.toThrow();
+        expect(logger.error).toHaveBeenCalledWith(expect.anything(), 'Error normalizing presenceUpdate event');
     });
 });

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import {
     BotEventSchema,
+    ClientStatusSnapshotSchema,
     GuildAvailableEventSchema,
     GuildUnavailableEventSchema,
     MemberJoinEventSchema,
@@ -8,6 +9,7 @@ import {
     MessageCreateEventSchema,
     MessageDeleteEventSchema,
     MessageUpdateEventSchema,
+    PresenceUpdateEventSchema,
 } from '@app/types/index';
 
 describe('Foundational Zod Schemas', () => {
@@ -168,6 +170,17 @@ describe('Foundational Zod Schemas', () => {
         });
     });
 
+    describe('ClientStatusSnapshotSchema', () => {
+        it('validates a client status snapshot', () => {
+            const result = ClientStatusSnapshotSchema.safeParse({
+                desktop: 'online',
+                mobile: 'idle',
+            });
+
+            expect(result.success).toBe(true);
+        });
+    });
+
     describe('MemberLeaveEventSchema', () => {
         it('validates a valid member leave event', () => {
             const validData = {
@@ -217,6 +230,46 @@ describe('Foundational Zod Schemas', () => {
 
             const result = MemberLeaveEventSchema.safeParse(invalidData);
             expect(result.success).toBe(false);
+        });
+    });
+
+    describe('PresenceUpdateEventSchema', () => {
+        it('validates a full presence update event', () => {
+            const validData = {
+                type: 'PRESENCE_UPDATE',
+                timestamp: Date.now(),
+                occurredAt: Date.now(),
+                userId: 'user-1',
+                serverId: 'guild-1',
+                oldStatus: 'offline',
+                newStatus: 'online',
+                oldClientStatus: { web: 'offline' },
+                newClientStatus: { desktop: 'online' },
+                oldActivityNames: ['Before'],
+                newActivityNames: ['After'],
+                oldActivityTypes: [0],
+                newActivityTypes: [2],
+            };
+
+            const result = PresenceUpdateEventSchema.safeParse(validData);
+            expect(result.success).toBe(true);
+        });
+
+        it('validates a sparse presence update event with optional old fields', () => {
+            const validData = {
+                type: 'PRESENCE_UPDATE',
+                timestamp: Date.now(),
+                occurredAt: Date.now(),
+                userId: 'user-1',
+                serverId: 'guild-1',
+                newStatus: 'idle',
+                newClientStatus: {},
+                newActivityNames: [],
+                newActivityTypes: [],
+            };
+
+            const result = PresenceUpdateEventSchema.safeParse(validData);
+            expect(result.success).toBe(true);
         });
     });
 
@@ -339,6 +392,23 @@ describe('Foundational Zod Schemas', () => {
                 serverId: 'guild-123',
                 guildName: 'AccordJS Guild',
                 memberCount: 42,
+            };
+
+            const result = BotEventSchema.safeParse(data);
+            expect(result.success).toBe(true);
+        });
+
+        it('correctly validates a presence update event', () => {
+            const data = {
+                type: 'PRESENCE_UPDATE',
+                timestamp: Date.now(),
+                occurredAt: Date.now(),
+                userId: 'user-1',
+                serverId: 'guild-1',
+                newStatus: 'online',
+                newClientStatus: { desktop: 'online' },
+                newActivityNames: ['After'],
+                newActivityTypes: [0],
             };
 
             const result = BotEventSchema.safeParse(data);

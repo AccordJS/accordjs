@@ -187,6 +187,9 @@ Converts Discord.js `messageUpdate` payloads into validated generic message-upda
 ### `normalizeMessageDelete(message: Message | PartialMessage): MessageDeleteEvent`
 Converts Discord.js `messageDelete` payloads into validated internal delete events, including partial payloads.
 
+### `normalizePresenceUpdate(oldPresence: Presence | null, newPresence: Presence): PresenceUpdateEvent`
+Converts Discord.js `presenceUpdate` payloads into validated generic presence-update events.
+
 ### `normalizeGuildAvailable(guild: Guild): GuildAvailableEvent`
 Converts Discord.js `guildCreate` payloads into validated generic guild-availability events.
 
@@ -210,6 +213,7 @@ Exported event schemas/types include:
 - `ChannelEventSchema`, `ChannelEvent`
 - `MessageCreateEventSchema`, `MessageCreateEvent`
 - `MessageUpdateEventSchema`, `MessageUpdateEvent`
+- `PresenceUpdateEventSchema`, `PresenceUpdateEvent`
 - `MemberJoinEventSchema`, `MemberJoinEvent`
 - `MessageDeleteEventSchema`, `MessageDeleteEvent`
 - `MemberLeaveEventSchema`, `MemberLeaveEvent`
