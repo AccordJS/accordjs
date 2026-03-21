@@ -1,5 +1,10 @@
-import { type MessageCreateEvent, MessageCreateEventSchema } from '@app/types';
-import type { Message } from 'discord.js';
+import {
+    type MessageCreateEvent,
+    MessageCreateEventSchema,
+    type MessageDeleteEvent,
+    MessageDeleteEventSchema,
+} from '@app/types';
+import type { Message, PartialMessage } from 'discord.js';
 
 /**
  * Normalizes a Discord.js Message object into an AccordJS MessageCreateEvent.
@@ -22,4 +27,25 @@ export const normalizeMessage = (message: Message): MessageCreateEvent => {
     };
 
     return MessageCreateEventSchema.parse(rawEvent);
+};
+
+/**
+ * Normalizes a Discord.js message-delete payload into an AccordJS MessageDeleteEvent.
+ *
+ * @param message - Raw Discord.js message or partial message payload.
+ * @returns Validated, normalized MessageDeleteEvent.
+ */
+export const normalizeMessageDelete = (message: Message | PartialMessage): MessageDeleteEvent => {
+    const rawEvent = {
+        type: 'MESSAGE_DELETE',
+        timestamp: Date.now(),
+        messageId: message.id,
+        channelId: message.channelId,
+        userId: message.author?.id,
+        serverId: message.guildId ?? undefined,
+        authorId: message.author?.id,
+        deletedAt: Date.now(),
+    };
+
+    return MessageDeleteEventSchema.parse(rawEvent);
 };

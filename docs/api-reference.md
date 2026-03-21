@@ -181,6 +181,9 @@ Methods:
 ### `normalizeMessage(message: Message): MessageCreateEvent`
 Converts Discord.js `Message` objects into validated internal events.
 
+### `normalizeMessageDelete(message: Message | PartialMessage): MessageDeleteEvent`
+Converts Discord.js `messageDelete` payloads into validated internal delete events, including partial payloads.
+
 ### `normalizeMember(member: GuildMember): MemberJoinEvent`
 Alias for `normalizeMemberJoin()`.
 

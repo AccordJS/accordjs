@@ -52,6 +52,7 @@ describe('GatewayAdapter', () => {
 
         expect(disabledClient.handlers.has('guildCreate')).toBe(false);
         expect(disabledClient.handlers.has('messageCreate')).toBe(true);
+        expect(disabledClient.handlers.has('messageDelete')).toBe(true);
         expect(disabledClient.handlers.has('guildMemberAdd')).toBe(true);
         expect(disabledClient.handlers.has('guildMemberRemove')).toBe(true);
 
@@ -204,5 +205,62 @@ describe('GatewayAdapter', () => {
                 username: 'Bob',
             })
         );
+    });
+
+    it('publishes MESSAGE_DELETE when messageDelete is enabled', () => {
+        const { client, handlers } = createClientStub();
+        const eventBus = createEventBusStub();
+        const adapter = new GatewayAdapter(client as never, eventBus, {
+            gatewayEvents: ['messageDelete'],
+            logger: createLoggerStub(),
+        });
+
+        adapter.registerListeners();
+
+        expect(handlers.has('messageCreate')).toBe(false);
+        expect(handlers.has('messageDelete')).toBe(true);
+        expect(handlers.has('guildMemberAdd')).toBe(false);
+        expect(handlers.has('guildMemberRemove')).toBe(false);
+
+        const messageDeleteHandler = handlers.get('messageDelete')?.[0];
+        expect(messageDeleteHandler).toBeDefined();
+
+        messageDeleteHandler?.({
+            id: 'message-2',
+            channelId: 'channel-9',
+            guildId: 'guild-3',
+            author: {
+                id: 'user-9',
+            },
+        });
+
+        expect(eventBus.publish).toHaveBeenCalledWith(
+            'MESSAGE_DELETE',
+            expect.objectContaining({
+                type: 'MESSAGE_DELETE',
+                messageId: 'message-2',
+                channelId: 'channel-9',
+                serverId: 'guild-3',
+                userId: 'user-9',
+                authorId: 'user-9',
+            })
+        );
+    });
+
+    it('logs messageDelete normalization errors instead of throwing', () => {
+        const { client, handlers } = createClientStub();
+        const logger = createLoggerStub();
+        const adapter = new GatewayAdapter(client as never, createEventBusStub(), {
+            gatewayEvents: ['messageDelete'],
+            logger,
+        });
+
+        adapter.registerListeners();
+
+        const messageDeleteHandler = handlers.get('messageDelete')?.[0];
+        expect(messageDeleteHandler).toBeDefined();
+
+        expect(() => messageDeleteHandler?.({ id: 'message-3' })).not.toThrow();
+        expect(logger.error).toHaveBeenCalledWith(expect.anything(), 'Error normalizing messageDelete event');
     });
 });

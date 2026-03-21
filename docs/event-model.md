@@ -26,11 +26,11 @@ Important current behavior:
 | Gateway Event | Meaning | AccordJS Event | Status |
 | --- | --- | --- | --- |
 | `messageCreate` | A Discord message was created | `MESSAGE_CREATE` | Supported |
+| `messageDelete` | A message was deleted | `MESSAGE_DELETE` | Supported |
 | `guildMemberAdd` | A member joined a guild | `MEMBER_JOIN` | Supported |
 | `guildMemberRemove` | A member left or was removed from a guild | `MEMBER_LEAVE` | Supported |
 | `guildDelete` | The client lost access to a guild or the guild became unavailable to it | None | Not normalized |
 | `guildCreate` | The client joined or became available in a guild | None | Debug-only today |
-| `messageDelete` | A message was deleted | Schema exists as `MESSAGE_DELETE`, but gateway normalization is not wired yet | Partially implemented |
 
 ## Debug-Capture Event Names
 

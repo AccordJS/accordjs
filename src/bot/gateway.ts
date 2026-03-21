@@ -1,7 +1,7 @@
 import type { EventBus } from '@app/bus';
 import type { DiscordClientDebugConfig } from '@app/config';
 import { normalizeMemberJoin, normalizeMemberLeave } from '@app/normalizers/normalize-member';
-import { normalizeMessage } from '@app/normalizers/normalize-message';
+import { normalizeMessage, normalizeMessageDelete } from '@app/normalizers/normalize-message';
 import {
     DEFAULT_DISCORD_CLIENT_DEBUG_EVENTS,
     DEFAULT_GATEWAY_EVENTS,
@@ -16,6 +16,7 @@ import type {
     Interaction,
     Message,
     PartialGuildMember,
+    PartialMessage,
     Presence,
     VoiceState,
 } from 'discord.js';
@@ -100,6 +101,16 @@ export class GatewayAdapter {
                             this.eventBus.publish('MEMBER_JOIN', event);
                         } catch (error) {
                             this.logger.error(error, 'Error normalizing guildMemberAdd event');
+                        }
+                    });
+                    break;
+                case 'messageDelete':
+                    this.client.on('messageDelete', (message: Message | PartialMessage) => {
+                        try {
+                            const event = normalizeMessageDelete(message);
+                            this.eventBus.publish('MESSAGE_DELETE', event);
+                        } catch (error) {
+                            this.logger.error(error, 'Error normalizing messageDelete event');
                         }
                     });
                     break;

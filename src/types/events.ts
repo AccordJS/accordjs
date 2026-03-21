@@ -83,10 +83,13 @@ export type MemberJoinEvent = z.infer<typeof MemberJoinEventSchema>;
 /**
  * Normalized message delete event schema
  */
-export const MessageDeleteEventSchema = ChannelEventSchema.extend({
+export const MessageDeleteEventSchema = BaseEventSchema.extend({
     type: z.literal('MESSAGE_DELETE'),
     messageId: z.string(),
-    authorId: z.string(),
+    channelId: z.string(),
+    userId: z.string().optional(),
+    serverId: z.string().optional(),
+    authorId: z.string().optional(),
     deletedAt: z.number().int().positive(),
 });
 
