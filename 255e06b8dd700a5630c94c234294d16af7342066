@@ -1,0 +1,31 @@
+docs/api-reference.md
+  54aeeddd6fc0f59b 137
+tests/unit/events/normalize-member.test.ts
+  54aeeddd6fc0f59b 2,24,51,67,70,81
+src/normalizers/normalize-message.ts
+  54aeeddd6fc0f59b 39-40,43,49
+tests/unit/plugins/plugin-manager.test.ts
+  54aeeddd6fc0f59b 88-104
+src/plugins/plugin-manager.ts
+  54aeeddd6fc0f59b 10-14,84,87-89
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.15",
+  "base_commit_sha": "255e06b8dd700a5630c94c234294d16af7342066",
+  "prompts": {
+    "54aeeddd6fc0f59b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d07ed-aa21-79a3-8fb3-a1168c9f14ce",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Angel S. Moreno <angelxmoreno@gmail.com>",
+      "messages": [],
+      "total_additions": 43,
+      "total_deletions": 18,
+      "accepted_lines": 43,
+      "overriden_lines": 0
+    }
+  }
+}
