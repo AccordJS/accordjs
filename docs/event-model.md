@@ -7,6 +7,8 @@ AccordJS has two event layers:
 
 These are not interchangeable. A gateway event is a Discord-facing transport detail. An AccordJS event is the framework's typed internal contract.
 
+For the framework policy on when AccordJS should normalize a gateway event, see [event-normalization-policy.md](./event-normalization-policy.md).
+
 ## Runtime Behavior
 
 Current flow:
@@ -65,3 +67,5 @@ The explicit bootstrap API accepts a `gatewayEvents` array so apps only attach t
 ## Debug Capture vs Normalization
 
 `debug.discordClientEvents` can log selected Discord.js client events without normalizing them into AccordJS events. This is useful for debugging unsupported or not-yet-normalized gateway events.
+
+AccordJS does not aim for one-to-one normalization coverage of every Discord gateway event. New normalized events should be added incrementally when community bots need a stable framework abstraction.
