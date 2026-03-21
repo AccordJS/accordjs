@@ -1,0 +1,53 @@
+examples/green-bird-bot/docs/setup-guide.md
+  54aeeddd6fc0f59b 1-182
+docs/event-normalization-policy.md
+  54aeeddd6fc0f59b 30
+src/types/events.ts
+  54aeeddd6fc0f59b 12,75-89,200,219
+tests/unit/events/normalize-message.test.ts
+  54aeeddd6fc0f59b 2,134-204
+docs/event-model.md
+  54aeeddd6fc0f59b 31,61
+src/types/gateway-events.ts
+  54aeeddd6fc0f59b 5,19,29
+tests/unit/types.test.ts
+  54aeeddd6fc0f59b 10,141-170,322-332
+src/normalizers/normalize-message.ts
+  54aeeddd6fc0f59b 6-7,56-80
+src/plugins/base-plugin.ts
+  54aeeddd6fc0f59b 15
+tests/unit/bot/gateway.test.ts
+  54aeeddd6fc0f59b 58,283-333,407-422
+examples/green-bird-bot/docs/notes.md
+  54aeeddd6fc0f59b 1-43
+examples/green-bird-bot/docs/missing-requirements.md
+  54aeeddd6fc0f59b 1-103
+examples/green-bird-bot/docs/overview.md
+  54aeeddd6fc0f59b 1-526
+src/bot/gateway.ts
+  54aeeddd6fc0f59b 5,118-129
+docs/api-reference.md
+  54aeeddd6fc0f59b 184-186,212
+examples/green-bird-bot/main.ts
+  54aeeddd6fc0f59b 1-47
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.17",
+  "base_commit_sha": "da1905c84ebd48bd57d07348f3063bc03cccc8d9",
+  "prompts": {
+    "54aeeddd6fc0f59b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d07ed-aa21-79a3-8fb3-a1168c9f14ce",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Angel S. Moreno <angelxmoreno@gmail.com>",
+      "messages": [],
+      "total_additions": 1175,
+      "total_deletions": 13,
+      "accepted_lines": 1165,
+      "overriden_lines": 0
+    }
+  }
+}
