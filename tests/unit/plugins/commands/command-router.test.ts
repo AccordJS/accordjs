@@ -3,7 +3,7 @@ import { InMemoryEventBus } from '@app/bus/in-memory-event-bus';
 import type { EventBus, EventHandler } from '@app/bus/types';
 import type { Config } from '@app/config';
 import { CommandRouterPlugin } from '@app/plugins/commands/command-router';
-import type { EventMap, PluginContext } from '@app/types';
+import type { EventMap, InteractionResponseRegistry, PluginContext } from '@app/types';
 import type {
     CommandDispatchEvent,
     CommandErrorEvent,
@@ -13,6 +13,13 @@ import type {
 import { createLogger } from '@app/utils/create-logger';
 
 describe('CommandRouterPlugin', () => {
+    const mockResponses = {
+        get: () => undefined,
+        require: () => {
+            throw new Error('not implemented');
+        },
+    } as InteractionResponseRegistry;
+
     const createMockContext = (): PluginContext => ({
         eventBus: new InMemoryEventBus(),
         config: {
@@ -27,6 +34,7 @@ describe('CommandRouterPlugin', () => {
             },
         } as Config,
         logger: createLogger('Test'),
+        responses: mockResponses,
     });
 
     it('registers handler via eventMap and dispatches through publish', async () => {
@@ -62,6 +70,7 @@ describe('CommandRouterPlugin', () => {
                 },
             } as Config,
             logger: createLogger('Test'),
+            responses: mockResponses,
         };
 
         const router = new CommandRouterPlugin();

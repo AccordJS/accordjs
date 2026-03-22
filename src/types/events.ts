@@ -10,6 +10,15 @@ import { z } from 'zod';
 export const EventTypeSchema = z.enum([
     'MESSAGE_CREATE',
     'MESSAGE_UPDATE',
+    'INTERACTION_COMMAND',
+    'INTERACTION_AUTOCOMPLETE',
+    'INTERACTION_BUTTON',
+    'INTERACTION_STRING_SELECT',
+    'INTERACTION_USER_SELECT',
+    'INTERACTION_ROLE_SELECT',
+    'INTERACTION_CHANNEL_SELECT',
+    'INTERACTION_MENTIONABLE_SELECT',
+    'INTERACTION_MODAL_SUBMIT',
     'PRESENCE_UPDATE',
     'MEMBER_JOIN',
     'MESSAGE_DELETE',
@@ -58,6 +67,13 @@ export const ChannelEventSchema = DiscordEventSchema.extend({
 
 export type ChannelEvent = z.infer<typeof ChannelEventSchema>;
 
+export const InteractionBaseEventSchema = DiscordEventSchema.extend({
+    interactionId: z.string(),
+    channelId: z.string().optional(),
+});
+
+export type InteractionBaseEvent = z.infer<typeof InteractionBaseEventSchema>;
+
 const PresenceStatusValueSchema = z.string();
 
 export const ClientStatusSnapshotSchema = z.object({
@@ -97,6 +113,78 @@ export const MessageUpdateEventSchema = BaseEventSchema.extend({
 });
 
 export type MessageUpdateEvent = z.infer<typeof MessageUpdateEventSchema>;
+
+export const InteractionCommandEventSchema = InteractionBaseEventSchema.extend({
+    type: z.literal('INTERACTION_COMMAND'),
+    commandName: z.string(),
+    subcommand: z.string().optional(),
+    subcommandGroup: z.string().optional(),
+    options: z.record(z.string(), z.unknown()),
+});
+
+export type InteractionCommandEvent = z.infer<typeof InteractionCommandEventSchema>;
+
+export const InteractionAutocompleteEventSchema = InteractionBaseEventSchema.extend({
+    type: z.literal('INTERACTION_AUTOCOMPLETE'),
+    commandName: z.string(),
+    focusedOptionName: z.string(),
+    focusedOptionValue: z.unknown(),
+    options: z.record(z.string(), z.unknown()),
+});
+
+export type InteractionAutocompleteEvent = z.infer<typeof InteractionAutocompleteEventSchema>;
+
+const InteractionMessageComponentEventSchema = InteractionBaseEventSchema.extend({
+    customId: z.string(),
+    messageId: z.string().optional(),
+});
+
+export const InteractionButtonEventSchema = InteractionMessageComponentEventSchema.extend({
+    type: z.literal('INTERACTION_BUTTON'),
+});
+
+export type InteractionButtonEvent = z.infer<typeof InteractionButtonEventSchema>;
+
+const InteractionSelectEventSchema = InteractionMessageComponentEventSchema.extend({
+    values: z.array(z.string()),
+});
+
+export const InteractionStringSelectEventSchema = InteractionSelectEventSchema.extend({
+    type: z.literal('INTERACTION_STRING_SELECT'),
+});
+
+export type InteractionStringSelectEvent = z.infer<typeof InteractionStringSelectEventSchema>;
+
+export const InteractionUserSelectEventSchema = InteractionSelectEventSchema.extend({
+    type: z.literal('INTERACTION_USER_SELECT'),
+});
+
+export type InteractionUserSelectEvent = z.infer<typeof InteractionUserSelectEventSchema>;
+
+export const InteractionRoleSelectEventSchema = InteractionSelectEventSchema.extend({
+    type: z.literal('INTERACTION_ROLE_SELECT'),
+});
+
+export type InteractionRoleSelectEvent = z.infer<typeof InteractionRoleSelectEventSchema>;
+
+export const InteractionChannelSelectEventSchema = InteractionSelectEventSchema.extend({
+    type: z.literal('INTERACTION_CHANNEL_SELECT'),
+});
+
+export type InteractionChannelSelectEvent = z.infer<typeof InteractionChannelSelectEventSchema>;
+
+export const InteractionMentionableSelectEventSchema = InteractionSelectEventSchema.extend({
+    type: z.literal('INTERACTION_MENTIONABLE_SELECT'),
+});
+
+export type InteractionMentionableSelectEvent = z.infer<typeof InteractionMentionableSelectEventSchema>;
+
+export const InteractionModalSubmitEventSchema = InteractionMessageComponentEventSchema.extend({
+    type: z.literal('INTERACTION_MODAL_SUBMIT'),
+    fields: z.record(z.string(), z.string()),
+});
+
+export type InteractionModalSubmitEvent = z.infer<typeof InteractionModalSubmitEventSchema>;
 
 /**
  * Normalized presence update event schema
@@ -229,6 +317,15 @@ export type CommandPermissionDeniedEvent = z.infer<typeof CommandPermissionDenie
 export const BotEventSchema = z.discriminatedUnion('type', [
     MessageCreateEventSchema,
     MessageUpdateEventSchema,
+    InteractionCommandEventSchema,
+    InteractionAutocompleteEventSchema,
+    InteractionButtonEventSchema,
+    InteractionStringSelectEventSchema,
+    InteractionUserSelectEventSchema,
+    InteractionRoleSelectEventSchema,
+    InteractionChannelSelectEventSchema,
+    InteractionMentionableSelectEventSchema,
+    InteractionModalSubmitEventSchema,
     PresenceUpdateEventSchema,
     MessageDeleteEventSchema,
     MemberJoinEventSchema,
@@ -249,6 +346,15 @@ export type BotEvent = z.infer<typeof BotEventSchema>;
 export const EventMapSchemas = {
     MESSAGE_CREATE: MessageCreateEventSchema,
     MESSAGE_UPDATE: MessageUpdateEventSchema,
+    INTERACTION_COMMAND: InteractionCommandEventSchema,
+    INTERACTION_AUTOCOMPLETE: InteractionAutocompleteEventSchema,
+    INTERACTION_BUTTON: InteractionButtonEventSchema,
+    INTERACTION_STRING_SELECT: InteractionStringSelectEventSchema,
+    INTERACTION_USER_SELECT: InteractionUserSelectEventSchema,
+    INTERACTION_ROLE_SELECT: InteractionRoleSelectEventSchema,
+    INTERACTION_CHANNEL_SELECT: InteractionChannelSelectEventSchema,
+    INTERACTION_MENTIONABLE_SELECT: InteractionMentionableSelectEventSchema,
+    INTERACTION_MODAL_SUBMIT: InteractionModalSubmitEventSchema,
     PRESENCE_UPDATE: PresenceUpdateEventSchema,
     MESSAGE_DELETE: MessageDeleteEventSchema,
     MEMBER_JOIN: MemberJoinEventSchema,

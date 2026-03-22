@@ -5,6 +5,7 @@ import type { AnyEventMiddleware } from '@app/middleware/types';
 import type { PluginManager, PluginRegistrationOptions } from '@app/plugins/plugin-manager';
 import type { Client } from 'discord.js';
 import type { GatewayEvent } from './gateway-events';
+import type { InteractionResponseRegistry } from './interactions';
 import type { Plugin } from './plugin';
 
 export interface PluginRegistration {
@@ -27,6 +28,7 @@ export interface AccordJsApp {
     eventBus: InMemoryEventBus;
     gateway: GatewayAdapter;
     pluginManager: PluginManager;
+    responses: InteractionResponseRegistry;
     start: () => Promise<string>;
     stop: () => Promise<void>;
 }

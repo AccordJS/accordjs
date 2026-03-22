@@ -1,6 +1,8 @@
 import type { EventBus } from '@app/bus';
 import type { DiscordClientDebugConfig } from '@app/config';
+import type { InMemoryInteractionResponseRegistry } from '@app/interactions';
 import { normalizeGuildAvailable, normalizeGuildUnavailable } from '@app/normalizers/normalize-guild';
+import { normalizeInteraction } from '@app/normalizers/normalize-interaction';
 import { normalizeMemberJoin, normalizeMemberLeave } from '@app/normalizers/normalize-member';
 import { normalizeMessage, normalizeMessageDelete, normalizeMessageUpdate } from '@app/normalizers/normalize-message';
 import { normalizePresenceUpdate } from '@app/normalizers/normalize-presence';
@@ -30,6 +32,7 @@ export interface GatewayAdapterOptions {
     debug?: DiscordClientDebugConfig;
     gatewayEvents?: readonly GatewayEvent[];
     logger?: Logger;
+    responses?: InMemoryInteractionResponseRegistry;
 }
 
 type DebugEventPayload = {
@@ -59,6 +62,7 @@ export class GatewayAdapter {
     protected logger: Logger;
     protected debugConfig: DiscordClientDebugConfig;
     protected gatewayEvents: GatewayEvent[];
+    protected responses?: InMemoryInteractionResponseRegistry;
 
     /**
      * @param client - The initialized Discord.js client.
@@ -73,6 +77,7 @@ export class GatewayAdapter {
             events: options.debug?.events ?? [...DEFAULT_DEBUG_OPTIONS.events],
         };
         this.gatewayEvents = [...(options.gatewayEvents ?? DEFAULT_GATEWAY_EVENTS)];
+        this.responses = options.responses;
     }
 
     /**
@@ -139,6 +144,21 @@ export class GatewayAdapter {
                         }
                     });
                     break;
+                case 'interactionCreate':
+                    this.client.on('interactionCreate', (interaction: Interaction) => {
+                        try {
+                            const event = normalizeInteraction(interaction);
+                            if (!event) {
+                                return;
+                            }
+
+                            this.responses?.register(interaction);
+                            this.publishInteractionEvent(event);
+                        } catch (error) {
+                            this.logger.error(error, 'Error normalizing interactionCreate event');
+                        }
+                    });
+                    break;
                 case 'guildDelete':
                     this.client.on('guildDelete', (guild: Guild) => {
                         try {
@@ -170,6 +190,26 @@ export class GatewayAdapter {
                     });
                     break;
             }
+        }
+    }
+
+    protected publishInteractionEvent(event: ReturnType<typeof normalizeInteraction>): void {
+        if (!event) {
+            return;
+        }
+
+        switch (event.type) {
+            case 'INTERACTION_COMMAND':
+            case 'INTERACTION_AUTOCOMPLETE':
+            case 'INTERACTION_BUTTON':
+            case 'INTERACTION_STRING_SELECT':
+            case 'INTERACTION_USER_SELECT':
+            case 'INTERACTION_ROLE_SELECT':
+            case 'INTERACTION_CHANNEL_SELECT':
+            case 'INTERACTION_MENTIONABLE_SELECT':
+            case 'INTERACTION_MODAL_SUBMIT':
+                this.eventBus.publish(event.type, event);
+                break;
         }
     }
 
