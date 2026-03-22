@@ -14,6 +14,8 @@ export * from '@app/bot/intents';
 export * from '@app/bus/index';
 // Configuration
 export * from '@app/config';
+// Interaction Foundation
+export * from '@app/interactions/index';
 // Middleware (public + advanced)
 export * from '@app/middleware/base-middleware';
 export * from '@app/middleware/built-in';
@@ -22,6 +24,7 @@ export * from '@app/middleware/middleware-runner';
 export * from '@app/middleware/types';
 // Event Normalization
 export * from '@app/normalizers/normalize-guild';
+export * from '@app/normalizers/normalize-interaction';
 export * from '@app/normalizers/normalize-member';
 export * from '@app/normalizers/normalize-message';
 export * from '@app/normalizers/normalize-presence';

@@ -42,6 +42,7 @@ describe('createAccordJsApp', () => {
 
         expect(app.pluginManager.getPlugins()).toEqual(['bound-plugin']);
         expect(app.eventBus.listMiddleware()).toHaveLength(1);
+        expect(app.responses).toBeDefined();
 
         const gateway = app.gateway as unknown as { gatewayEvents: string[] };
         expect(gateway.gatewayEvents).toEqual(['guildMemberRemove']);

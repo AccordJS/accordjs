@@ -57,6 +57,7 @@ describe('GatewayAdapter', () => {
         expect(disabledClient.handlers.has('messageCreate')).toBe(true);
         expect(disabledClient.handlers.has('messageUpdate')).toBe(true);
         expect(disabledClient.handlers.has('messageDelete')).toBe(true);
+        expect(disabledClient.handlers.has('interactionCreate')).toBe(true);
         expect(disabledClient.handlers.has('presenceUpdate')).toBe(true);
         expect(disabledClient.handlers.has('guildMemberAdd')).toBe(true);
         expect(disabledClient.handlers.has('guildMemberRemove')).toBe(true);
@@ -328,6 +329,58 @@ describe('GatewayAdapter', () => {
                 authorId: 'user-7',
                 content: 'after',
                 editedAt: 5000,
+            })
+        );
+    });
+
+    it('publishes INTERACTION_BUTTON when interactionCreate is enabled', () => {
+        const { client, handlers } = createClientStub();
+        const eventBus = createEventBusStub();
+        const responses = {
+            register: mock(() => {}),
+        };
+        const adapter = new GatewayAdapter(client as never, eventBus, {
+            gatewayEvents: ['interactionCreate'],
+            logger: createLoggerStub(),
+            responses: responses as never,
+        });
+
+        adapter.registerListeners();
+
+        expect(handlers.has('interactionCreate')).toBe(true);
+
+        const interactionCreateHandler = handlers.get('interactionCreate')?.[0];
+        expect(interactionCreateHandler).toBeDefined();
+
+        interactionCreateHandler?.({
+            id: 'interaction-1',
+            user: { id: 'user-1' },
+            channelId: 'channel-1',
+            guildId: 'guild-1',
+            isChatInputCommand: () => false,
+            isAutocomplete: () => false,
+            isButton: () => true,
+            isStringSelectMenu: () => false,
+            isUserSelectMenu: () => false,
+            isRoleSelectMenu: () => false,
+            isChannelSelectMenu: () => false,
+            isMentionableSelectMenu: () => false,
+            isModalSubmit: () => false,
+            customId: 'scope:server',
+            message: { id: 'message-1' },
+        });
+
+        expect(responses.register).toHaveBeenCalledTimes(1);
+        expect(eventBus.publish).toHaveBeenCalledWith(
+            'INTERACTION_BUTTON',
+            expect.objectContaining({
+                type: 'INTERACTION_BUTTON',
+                interactionId: 'interaction-1',
+                customId: 'scope:server',
+                messageId: 'message-1',
+                userId: 'user-1',
+                channelId: 'channel-1',
+                serverId: 'guild-1',
             })
         );
     });

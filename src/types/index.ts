@@ -6,5 +6,6 @@ export * from '@app/types/app';
 export * from '@app/types/debug';
 export * from '@app/types/events';
 export * from '@app/types/gateway-events';
+export * from '@app/types/interactions';
 export * from '@app/types/plugin';
 export * from '@app/types/plugin-context';

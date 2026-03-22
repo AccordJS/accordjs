@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import type { EventBus } from '@app/bus/types';
 import type { Config } from '@app/config';
 import { PluginManager } from '@app/plugins/plugin-manager';
+import type { InteractionResponseRegistry } from '@app/types';
 import type { EventHandlerMap, Plugin, PluginContext } from '@app/types/index';
 
 class TestPlugin implements Plugin {
@@ -22,9 +23,10 @@ class TestPlugin implements Plugin {
 describe('PluginManager', () => {
     const mockBus = {} as EventBus;
     const mockConfig = {} as Config;
+    const mockResponses = {} as InteractionResponseRegistry;
 
     it('should register a single plugin and inject context', async () => {
-        const manager = new PluginManager(mockBus, mockConfig);
+        const manager = new PluginManager(mockBus, mockConfig, mockResponses);
         const plugin = new TestPlugin('test-1');
 
         await manager.register(plugin);
@@ -37,7 +39,7 @@ describe('PluginManager', () => {
     });
 
     it('should not allow duplicate registrations for the same plugin name', async () => {
-        const manager = new PluginManager(mockBus, mockConfig);
+        const manager = new PluginManager(mockBus, mockConfig, mockResponses);
         const plugin1 = new TestPlugin('duplicate');
         const plugin2 = new TestPlugin('duplicate');
 
@@ -50,7 +52,7 @@ describe('PluginManager', () => {
     });
 
     it('should register multiple plugins via registerAll', async () => {
-        const manager = new PluginManager(mockBus, mockConfig);
+        const manager = new PluginManager(mockBus, mockConfig, mockResponses);
         const p1 = new TestPlugin('p1');
         const p2 = new TestPlugin('p2');
 
@@ -63,7 +65,7 @@ describe('PluginManager', () => {
     });
 
     it('should throw if plugin registration fails', async () => {
-        const manager = new PluginManager(mockBus, mockConfig);
+        const manager = new PluginManager(mockBus, mockConfig, mockResponses);
         const failingPlugin: Plugin = {
             name: 'failing',
             register: async () => {
@@ -75,7 +77,7 @@ describe('PluginManager', () => {
     });
 
     it('should inject explicit handler bindings when provided', async () => {
-        const manager = new PluginManager(mockBus, mockConfig);
+        const manager = new PluginManager(mockBus, mockConfig, mockResponses);
         const plugin = new TestPlugin('bound-plugin');
         const handlerBindings: EventHandlerMap = {
             handleLeave: 'MEMBER_LEAVE',
@@ -87,7 +89,7 @@ describe('PluginManager', () => {
     });
 
     it('should preserve handler bindings when registerAll receives plugin registrations', async () => {
-        const manager = new PluginManager(mockBus, mockConfig);
+        const manager = new PluginManager(mockBus, mockConfig, mockResponses);
         const plugin = new TestPlugin('bulk-bound-plugin');
         const handlerBindings: EventHandlerMap = {
             handleDelete: 'MESSAGE_DELETE',

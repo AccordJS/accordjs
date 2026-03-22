@@ -1,6 +1,6 @@
 import type { EventBus } from '@app/bus/types';
 import type { Config } from '@app/config';
-import type { EventHandlerMap, Plugin, PluginContext } from '@app/types';
+import type { EventHandlerMap, InteractionResponseRegistry, Plugin, PluginContext } from '@app/types';
 import { createLogger } from '@app/utils/create-logger';
 
 export interface PluginRegistrationOptions {
@@ -35,6 +35,11 @@ export class PluginManager {
     protected config: Config;
 
     /**
+     * Registry for framework-owned interaction responses.
+     */
+    protected responses: InteractionResponseRegistry;
+
+    /**
      * Framework logger instance.
      */
     protected logger = createLogger('PluginManager');
@@ -43,9 +48,10 @@ export class PluginManager {
      * @param eventBus - The event bus to provide to plugins.
      * @param config - The configuration to provide to plugins.
      */
-    constructor(eventBus: EventBus, config: Config) {
+    constructor(eventBus: EventBus, config: Config, responses: InteractionResponseRegistry) {
         this.eventBus = eventBus;
         this.config = config;
+        this.responses = responses;
     }
 
     /**
@@ -63,6 +69,7 @@ export class PluginManager {
         const context: PluginContext = {
             eventBus: this.eventBus,
             config: this.config,
+            responses: this.responses,
             handlerBindings: options.handlerBindings,
             logger: createLogger(`Plugin:${plugin.name}`),
         };

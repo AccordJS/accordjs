@@ -1,6 +1,7 @@
 import type { EventBus } from '@app/bus/types';
 import type { Config } from '@app/config';
 import type { EventHandlerMap } from '@app/types/events';
+import type { InteractionResponseRegistry } from '@app/types/interactions';
 import type { Logger } from 'pino';
 
 /**
@@ -24,6 +25,11 @@ export interface PluginContext {
      * A logger instance configured for the plugin.
      */
     readonly logger: Logger;
+
+    /**
+     * Framework-owned response access for normalized interactions.
+     */
+    readonly responses: InteractionResponseRegistry;
 
     /**
      * Optional explicit handler bindings supplied by app bootstrap code.
