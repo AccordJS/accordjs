@@ -1,10 +1,15 @@
 import { describe, expect, it } from 'bun:test';
 import {
     BotEventSchema,
+    ClientStatusSnapshotSchema,
+    GuildAvailableEventSchema,
+    GuildUnavailableEventSchema,
     MemberJoinEventSchema,
     MemberLeaveEventSchema,
     MessageCreateEventSchema,
     MessageDeleteEventSchema,
+    MessageUpdateEventSchema,
+    PresenceUpdateEventSchema,
 } from '@app/types/index';
 
 describe('Foundational Zod Schemas', () => {
@@ -135,6 +140,47 @@ describe('Foundational Zod Schemas', () => {
         });
     });
 
+    describe('MessageUpdateEventSchema', () => {
+        it('validates a valid message update event', () => {
+            const validData = {
+                type: 'MESSAGE_UPDATE',
+                timestamp: Date.now(),
+                messageId: '123',
+                channelId: '456',
+                userId: '789',
+                authorId: '789',
+                content: 'Updated content',
+                editedAt: Date.now(),
+            };
+
+            const result = MessageUpdateEventSchema.safeParse(validData);
+            expect(result.success).toBe(true);
+        });
+
+        it('validates a sparse message update event', () => {
+            const validData = {
+                type: 'MESSAGE_UPDATE',
+                timestamp: Date.now(),
+                messageId: '123',
+                channelId: '456',
+            };
+
+            const result = MessageUpdateEventSchema.safeParse(validData);
+            expect(result.success).toBe(true);
+        });
+    });
+
+    describe('ClientStatusSnapshotSchema', () => {
+        it('validates a client status snapshot', () => {
+            const result = ClientStatusSnapshotSchema.safeParse({
+                desktop: 'online',
+                mobile: 'idle',
+            });
+
+            expect(result.success).toBe(true);
+        });
+    });
+
     describe('MemberLeaveEventSchema', () => {
         it('validates a valid member leave event', () => {
             const validData = {
@@ -184,6 +230,77 @@ describe('Foundational Zod Schemas', () => {
 
             const result = MemberLeaveEventSchema.safeParse(invalidData);
             expect(result.success).toBe(false);
+        });
+    });
+
+    describe('PresenceUpdateEventSchema', () => {
+        it('validates a full presence update event', () => {
+            const validData = {
+                type: 'PRESENCE_UPDATE',
+                timestamp: Date.now(),
+                occurredAt: Date.now(),
+                userId: 'user-1',
+                serverId: 'guild-1',
+                oldStatus: 'offline',
+                newStatus: 'online',
+                oldClientStatus: { web: 'offline' },
+                newClientStatus: { desktop: 'online' },
+                oldActivityNames: ['Before'],
+                newActivityNames: ['After'],
+                oldActivityTypes: [0],
+                newActivityTypes: [2],
+            };
+
+            const result = PresenceUpdateEventSchema.safeParse(validData);
+            expect(result.success).toBe(true);
+        });
+
+        it('validates a sparse presence update event with optional old fields', () => {
+            const validData = {
+                type: 'PRESENCE_UPDATE',
+                timestamp: Date.now(),
+                occurredAt: Date.now(),
+                userId: 'user-1',
+                serverId: 'guild-1',
+                newStatus: 'idle',
+                newClientStatus: {},
+                newActivityNames: [],
+                newActivityTypes: [],
+            };
+
+            const result = PresenceUpdateEventSchema.safeParse(validData);
+            expect(result.success).toBe(true);
+        });
+    });
+
+    describe('GuildAvailableEventSchema', () => {
+        it('validates a valid guild available event', () => {
+            const validData = {
+                type: 'GUILD_AVAILABLE',
+                timestamp: Date.now(),
+                serverId: 'guild-123',
+                guildName: 'AccordJS Guild',
+                memberCount: 42,
+            };
+
+            const result = GuildAvailableEventSchema.safeParse(validData);
+            expect(result.success).toBe(true);
+        });
+    });
+
+    describe('GuildUnavailableEventSchema', () => {
+        it('validates a valid guild unavailable event', () => {
+            const validData = {
+                type: 'GUILD_UNAVAILABLE',
+                timestamp: Date.now(),
+                serverId: 'guild-123',
+                guildName: 'AccordJS Guild',
+                memberCount: 42,
+                unavailable: true,
+            };
+
+            const result = GuildUnavailableEventSchema.safeParse(validData);
+            expect(result.success).toBe(true);
         });
     });
 
@@ -253,6 +370,49 @@ describe('Foundational Zod Schemas', () => {
                     expect(result.data.messageId).toBe('123');
                 }
             }
+        });
+
+        it('correctly validates a message update event', () => {
+            const data = {
+                type: 'MESSAGE_UPDATE',
+                timestamp: Date.now(),
+                messageId: '123',
+                channelId: '456',
+                content: 'Updated content',
+            };
+
+            const result = BotEventSchema.safeParse(data);
+            expect(result.success).toBe(true);
+        });
+
+        it('correctly validates a guild available event', () => {
+            const data = {
+                type: 'GUILD_AVAILABLE',
+                timestamp: Date.now(),
+                serverId: 'guild-123',
+                guildName: 'AccordJS Guild',
+                memberCount: 42,
+            };
+
+            const result = BotEventSchema.safeParse(data);
+            expect(result.success).toBe(true);
+        });
+
+        it('correctly validates a presence update event', () => {
+            const data = {
+                type: 'PRESENCE_UPDATE',
+                timestamp: Date.now(),
+                occurredAt: Date.now(),
+                userId: 'user-1',
+                serverId: 'guild-1',
+                newStatus: 'online',
+                newClientStatus: { desktop: 'online' },
+                newActivityNames: ['After'],
+                newActivityTypes: [0],
+            };
+
+            const result = BotEventSchema.safeParse(data);
+            expect(result.success).toBe(true);
         });
 
         it('fails on unknown event type in union', () => {

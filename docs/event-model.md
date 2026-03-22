@@ -7,6 +7,8 @@ AccordJS has two event layers:
 
 These are not interchangeable. A gateway event is a Discord-facing transport detail. An AccordJS event is the framework's typed internal contract.
 
+For the framework policy on when AccordJS should normalize a gateway event, see [event-normalization-policy.md](./event-normalization-policy.md).
+
 ## Runtime Behavior
 
 Current flow:
@@ -26,11 +28,13 @@ Important current behavior:
 | Gateway Event | Meaning | AccordJS Event | Status |
 | --- | --- | --- | --- |
 | `messageCreate` | A Discord message was created | `MESSAGE_CREATE` | Supported |
+| `messageUpdate` | A message changed | `MESSAGE_UPDATE` | Supported |
 | `messageDelete` | A message was deleted | `MESSAGE_DELETE` | Supported |
+| `presenceUpdate` | A user's presence changed in a guild | `PRESENCE_UPDATE` | Supported |
+| `guildCreate` | The guild is now available to the client | `GUILD_AVAILABLE` | Supported |
+| `guildDelete` | The guild is no longer available to the client | `GUILD_UNAVAILABLE` | Supported |
 | `guildMemberAdd` | A member joined a guild | `MEMBER_JOIN` | Supported |
 | `guildMemberRemove` | A member left or was removed from a guild | `MEMBER_LEAVE` | Supported |
-| `guildDelete` | The client lost access to a guild or the guild became unavailable to it | None | Not normalized |
-| `guildCreate` | The client joined or became available in a guild | None | Debug-only today |
 
 ## Debug-Capture Event Names
 
@@ -55,7 +59,10 @@ The current debug capture layer can log these Discord.js client event names with
 ## Semantic Traps
 
 - `guildDelete` does **not** mean "a member left the guild". For member departures, look at `guildMemberRemove` -> `MEMBER_LEAVE`.
-- `guildCreate` is about the bot client and a guild relationship, not a member joining.
+- `messageUpdate` is normalized as `MESSAGE_UPDATE`, which is intentionally generic. It means the message changed, not necessarily that text content was edited.
+- `presenceUpdate` is normalized as `PRESENCE_UPDATE`, which is intentionally generic. It represents a presence change snapshot, not a higher-level interpretation like "came online" or "started playing".
+- `guildCreate` is normalized as `GUILD_AVAILABLE`, which is intentionally generic. Apps should infer "new install" versus reconnect from their own state.
+- `guildDelete` is normalized as `GUILD_UNAVAILABLE`, which is also intentionally generic. Apps can use the `unavailable` flag to distinguish outage-style loss from likely removal or loss of access.
 - `MEMBER_JOIN` and `MEMBER_LEAVE` are AccordJS event names. They are framework-facing, not Discord.js event names.
 
 ## Gateway Event Selection
@@ -65,3 +72,5 @@ The explicit bootstrap API accepts a `gatewayEvents` array so apps only attach t
 ## Debug Capture vs Normalization
 
 `debug.discordClientEvents` can log selected Discord.js client events without normalizing them into AccordJS events. This is useful for debugging unsupported or not-yet-normalized gateway events.
+
+AccordJS does not aim for one-to-one normalization coverage of every Discord gateway event. New normalized events should be added incrementally when community bots need a stable framework abstraction.

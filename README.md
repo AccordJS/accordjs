@@ -79,6 +79,8 @@ AccordJS follows a clean, event-driven architecture with these core principles:
 ### 1. Gateway Events vs AccordJS Events
 AccordJS distinguishes between Discord.js `gateway events` such as `guildMemberRemove` and normalized `AccordJS events` such as `MEMBER_LEAVE`.
 The canonical mapping table lives in [docs/event-model.md](docs/event-model.md).
+The normalization policy lives in [docs/event-normalization-policy.md](docs/event-normalization-policy.md).
+The next interaction roadmap lives in [docs/interaction-presentation-layer.md](docs/interaction-presentation-layer.md).
 
 ### 2. Discord Client Isolation
 The Discord client exists only in the gateway layer, preventing Discord-specific objects from leaking into application logic.
@@ -87,6 +89,7 @@ The Discord client exists only in the gateway layer, preventing Discord-specific
 Discord events are transformed into internal event types using Zod schemas for framework independence and runtime validation.
 
 When needed, the gateway can also emit structured debug logs for selected raw Discord.js client events before normalization.
+AccordJS does not normalize every Discord gateway event. New normalized events are added incrementally as community bots need stable framework-level abstractions.
 
 ### 4. Typed Event Bus
 A fully typed event distribution system ensures compile-time safety and eliminates runtime errors.
@@ -261,7 +264,7 @@ const app = await createAccordJsApp({
 await app.start();
 ```
 
-For detailed plugin development guidance, see [docs/plugin-development.md](docs/plugin-development.md), [docs/getting-started.md](docs/getting-started.md), [docs/event-model.md](docs/event-model.md), and [docs/community-bot-tutorial-spec.md](docs/community-bot-tutorial-spec.md).
+For detailed plugin development guidance, see [docs/plugin-development.md](docs/plugin-development.md), [docs/getting-started.md](docs/getting-started.md), [docs/event-model.md](docs/event-model.md), [docs/interaction-presentation-layer.md](docs/interaction-presentation-layer.md), and [docs/community-bot-tutorial-spec.md](docs/community-bot-tutorial-spec.md).
 
 ## Acknowledgments
 

@@ -1,7 +1,9 @@
 import type { EventBus } from '@app/bus';
 import type { DiscordClientDebugConfig } from '@app/config';
+import { normalizeGuildAvailable, normalizeGuildUnavailable } from '@app/normalizers/normalize-guild';
 import { normalizeMemberJoin, normalizeMemberLeave } from '@app/normalizers/normalize-member';
-import { normalizeMessage, normalizeMessageDelete } from '@app/normalizers/normalize-message';
+import { normalizeMessage, normalizeMessageDelete, normalizeMessageUpdate } from '@app/normalizers/normalize-message';
+import { normalizePresenceUpdate } from '@app/normalizers/normalize-presence';
 import {
     DEFAULT_DISCORD_CLIENT_DEBUG_EVENTS,
     DEFAULT_GATEWAY_EVENTS,
@@ -101,6 +103,49 @@ export class GatewayAdapter {
                             this.eventBus.publish('MEMBER_JOIN', event);
                         } catch (error) {
                             this.logger.error(error, 'Error normalizing guildMemberAdd event');
+                        }
+                    });
+                    break;
+                case 'guildCreate':
+                    this.client.on('guildCreate', (guild: Guild) => {
+                        try {
+                            const event = normalizeGuildAvailable(guild);
+                            this.eventBus.publish('GUILD_AVAILABLE', event);
+                        } catch (error) {
+                            this.logger.error(error, 'Error normalizing guildCreate event');
+                        }
+                    });
+                    break;
+                case 'messageUpdate':
+                    this.client.on(
+                        'messageUpdate',
+                        (oldMessage: Message | PartialMessage, newMessage: Message | PartialMessage) => {
+                            try {
+                                const event = normalizeMessageUpdate(oldMessage, newMessage);
+                                this.eventBus.publish('MESSAGE_UPDATE', event);
+                            } catch (error) {
+                                this.logger.error(error, 'Error normalizing messageUpdate event');
+                            }
+                        }
+                    );
+                    break;
+                case 'presenceUpdate':
+                    this.client.on('presenceUpdate', (oldPresence: Presence | null, newPresence: Presence) => {
+                        try {
+                            const event = normalizePresenceUpdate(oldPresence, newPresence);
+                            this.eventBus.publish('PRESENCE_UPDATE', event);
+                        } catch (error) {
+                            this.logger.error(error, 'Error normalizing presenceUpdate event');
+                        }
+                    });
+                    break;
+                case 'guildDelete':
+                    this.client.on('guildDelete', (guild: Guild) => {
+                        try {
+                            const event = normalizeGuildUnavailable(guild);
+                            this.eventBus.publish('GUILD_UNAVAILABLE', event);
+                        } catch (error) {
+                            this.logger.error(error, 'Error normalizing guildDelete event');
                         }
                     });
                     break;

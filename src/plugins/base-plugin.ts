@@ -12,9 +12,13 @@ import { PluginMiddlewareManager } from './plugin-middleware-manager';
 export abstract class BasePlugin implements Plugin {
     private static readonly defaultEventMap: EventHandlerMap = Object.freeze({
         onMessageCreate: 'MESSAGE_CREATE',
+        onMessageUpdate: 'MESSAGE_UPDATE',
+        onPresenceUpdate: 'PRESENCE_UPDATE',
         onMemberJoin: 'MEMBER_JOIN',
         onMemberLeave: 'MEMBER_LEAVE',
         onMessageDelete: 'MESSAGE_DELETE',
+        onGuildAvailable: 'GUILD_AVAILABLE',
+        onGuildUnavailable: 'GUILD_UNAVAILABLE',
         onCommandDispatch: 'COMMAND_DISPATCH',
         onCommandExecute: 'COMMAND_EXECUTE',
         onCommandError: 'COMMAND_ERROR',

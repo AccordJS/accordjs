@@ -3,6 +3,8 @@ import {
     MessageCreateEventSchema,
     type MessageDeleteEvent,
     MessageDeleteEventSchema,
+    type MessageUpdateEvent,
+    MessageUpdateEventSchema,
 } from '@app/types';
 import type { Message, PartialMessage } from 'discord.js';
 
@@ -50,4 +52,30 @@ export const normalizeMessageDelete = (message: Message | PartialMessage): Messa
     };
 
     return MessageDeleteEventSchema.parse(rawEvent);
+};
+
+/**
+ * Normalizes a Discord.js message-update payload into an AccordJS MessageUpdateEvent.
+ *
+ * @param _oldMessage - Previous Discord.js message payload.
+ * @param newMessage - Updated Discord.js message payload.
+ * @returns Validated, normalized MessageUpdateEvent.
+ */
+export const normalizeMessageUpdate = (
+    _oldMessage: Message | PartialMessage,
+    newMessage: Message | PartialMessage
+): MessageUpdateEvent => {
+    const timestamp = Date.now();
+
+    return MessageUpdateEventSchema.parse({
+        type: 'MESSAGE_UPDATE',
+        timestamp,
+        messageId: newMessage.id,
+        channelId: newMessage.channelId,
+        serverId: newMessage.guildId ?? undefined,
+        userId: newMessage.author?.id,
+        authorId: newMessage.author?.id,
+        content: newMessage.content ?? undefined,
+        editedAt: newMessage.editedTimestamp ?? undefined,
+    });
 };

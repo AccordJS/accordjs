@@ -9,9 +9,13 @@ import { z } from 'zod';
  */
 export const EventTypeSchema = z.enum([
     'MESSAGE_CREATE',
+    'MESSAGE_UPDATE',
+    'PRESENCE_UPDATE',
     'MEMBER_JOIN',
     'MESSAGE_DELETE',
     'MEMBER_LEAVE',
+    'GUILD_AVAILABLE',
+    'GUILD_UNAVAILABLE',
     'COMMAND_DISPATCH',
     'COMMAND_EXECUTE',
     'COMMAND_ERROR',
@@ -54,6 +58,16 @@ export const ChannelEventSchema = DiscordEventSchema.extend({
 
 export type ChannelEvent = z.infer<typeof ChannelEventSchema>;
 
+const PresenceStatusValueSchema = z.string();
+
+export const ClientStatusSnapshotSchema = z.object({
+    desktop: PresenceStatusValueSchema.optional(),
+    mobile: PresenceStatusValueSchema.optional(),
+    web: PresenceStatusValueSchema.optional(),
+});
+
+export type ClientStatusSnapshot = z.infer<typeof ClientStatusSnapshotSchema>;
+
 /**
  * Normalized message creation event schema
  */
@@ -67,6 +81,42 @@ export const MessageCreateEventSchema = ChannelEventSchema.extend({
 });
 
 export type MessageCreateEvent = z.infer<typeof MessageCreateEventSchema>;
+
+/**
+ * Normalized message update event schema
+ */
+export const MessageUpdateEventSchema = BaseEventSchema.extend({
+    type: z.literal('MESSAGE_UPDATE'),
+    messageId: z.string(),
+    channelId: z.string(),
+    serverId: z.string().optional(),
+    userId: z.string().optional(),
+    authorId: z.string().optional(),
+    content: z.string().optional(),
+    editedAt: z.number().int().positive().optional(),
+});
+
+export type MessageUpdateEvent = z.infer<typeof MessageUpdateEventSchema>;
+
+/**
+ * Normalized presence update event schema
+ */
+export const PresenceUpdateEventSchema = BaseEventSchema.extend({
+    type: z.literal('PRESENCE_UPDATE'),
+    occurredAt: z.number().int().positive(),
+    userId: z.string(),
+    serverId: z.string(),
+    oldStatus: PresenceStatusValueSchema.optional(),
+    newStatus: PresenceStatusValueSchema,
+    oldClientStatus: ClientStatusSnapshotSchema.optional(),
+    newClientStatus: ClientStatusSnapshotSchema,
+    oldActivityNames: z.array(z.string()).optional(),
+    newActivityNames: z.array(z.string()),
+    oldActivityTypes: z.array(z.number().int().nonnegative()).optional(),
+    newActivityTypes: z.array(z.number().int().nonnegative()),
+});
+
+export type PresenceUpdateEvent = z.infer<typeof PresenceUpdateEventSchema>;
 
 /**
  * Normalized member join event schema
@@ -107,6 +157,25 @@ export const MemberLeaveEventSchema = DiscordEventSchema.extend({
 });
 
 export type MemberLeaveEvent = z.infer<typeof MemberLeaveEventSchema>;
+
+export const GuildAvailableEventSchema = BaseEventSchema.extend({
+    type: z.literal('GUILD_AVAILABLE'),
+    serverId: z.string(),
+    guildName: z.string(),
+    memberCount: z.number().int().nonnegative().optional(),
+});
+
+export type GuildAvailableEvent = z.infer<typeof GuildAvailableEventSchema>;
+
+export const GuildUnavailableEventSchema = BaseEventSchema.extend({
+    type: z.literal('GUILD_UNAVAILABLE'),
+    serverId: z.string(),
+    guildName: z.string(),
+    memberCount: z.number().int().nonnegative().optional(),
+    unavailable: z.boolean().optional(),
+});
+
+export type GuildUnavailableEvent = z.infer<typeof GuildUnavailableEventSchema>;
 
 /**
  * Normalized command dispatch event schema
@@ -159,9 +228,13 @@ export type CommandPermissionDeniedEvent = z.infer<typeof CommandPermissionDenie
  */
 export const BotEventSchema = z.discriminatedUnion('type', [
     MessageCreateEventSchema,
+    MessageUpdateEventSchema,
+    PresenceUpdateEventSchema,
     MessageDeleteEventSchema,
     MemberJoinEventSchema,
     MemberLeaveEventSchema,
+    GuildAvailableEventSchema,
+    GuildUnavailableEventSchema,
     CommandDispatchEventSchema,
     CommandExecuteEventSchema,
     CommandErrorEventSchema,
@@ -175,9 +248,13 @@ export type BotEvent = z.infer<typeof BotEventSchema>;
  */
 export const EventMapSchemas = {
     MESSAGE_CREATE: MessageCreateEventSchema,
+    MESSAGE_UPDATE: MessageUpdateEventSchema,
+    PRESENCE_UPDATE: PresenceUpdateEventSchema,
     MESSAGE_DELETE: MessageDeleteEventSchema,
     MEMBER_JOIN: MemberJoinEventSchema,
     MEMBER_LEAVE: MemberLeaveEventSchema,
+    GUILD_AVAILABLE: GuildAvailableEventSchema,
+    GUILD_UNAVAILABLE: GuildUnavailableEventSchema,
     COMMAND_DISPATCH: CommandDispatchEventSchema,
     COMMAND_EXECUTE: CommandExecuteEventSchema,
     COMMAND_ERROR: CommandErrorEventSchema,
