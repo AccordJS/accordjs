@@ -22,6 +22,30 @@ const INTERACTION_RESPONSE_TTL_MS = 15 * 60 * 1000;
 class InteractionResponseHandle implements AccordInteractionResponse {
     constructor(private readonly interaction: Interaction) {}
 
+    private createReplyOptions(options: AccordReplyOptions): InteractionReplyOptions {
+        const { ephemeral, ...rest } = options;
+        if (!ephemeral) {
+            return rest;
+        }
+
+        return {
+            ...rest,
+            flags: rest.flags ? [rest.flags, MessageFlags.Ephemeral] : MessageFlags.Ephemeral,
+        };
+    }
+
+    private createDeferOptions(options: AccordDeferOptions): InteractionDeferReplyOptions {
+        const { ephemeral, ...rest } = options;
+        if (!ephemeral) {
+            return rest;
+        }
+
+        return {
+            ...rest,
+            flags: rest.flags ? [rest.flags, MessageFlags.Ephemeral] : MessageFlags.Ephemeral,
+        };
+    }
+
     public async reply(options: string | AccordReplyOptions): Promise<void> {
         const interaction = this.requireRepliable();
 
@@ -30,26 +54,14 @@ class InteractionResponseHandle implements AccordInteractionResponse {
             return;
         }
 
-        const { ephemeral, ...rest } = options;
-        const replyOptions: InteractionReplyOptions = ephemeral
-            ? {
-                  ...rest,
-                  flags: rest.flags ? [rest.flags, MessageFlags.Ephemeral] : MessageFlags.Ephemeral,
-              }
-            : rest;
+        const replyOptions = this.createReplyOptions(options);
 
         await interaction.reply(replyOptions);
     }
 
     public async defer(options: AccordDeferOptions = {}): Promise<void> {
         const interaction = this.requireRepliable();
-        const { ephemeral, ...rest } = options;
-        const deferOptions: InteractionDeferReplyOptions = ephemeral
-            ? {
-                  ...rest,
-                  flags: rest.flags ? [rest.flags, MessageFlags.Ephemeral] : MessageFlags.Ephemeral,
-              }
-            : rest;
+        const deferOptions = this.createDeferOptions(options);
 
         await interaction.deferReply(deferOptions);
     }
@@ -65,13 +77,7 @@ class InteractionResponseHandle implements AccordInteractionResponse {
             return interaction.followUp(options);
         }
 
-        const { ephemeral, ...rest } = options;
-        const replyOptions: InteractionReplyOptions = ephemeral
-            ? {
-                  ...rest,
-                  flags: rest.flags ? [rest.flags, MessageFlags.Ephemeral] : MessageFlags.Ephemeral,
-              }
-            : rest;
+        const replyOptions = this.createReplyOptions(options);
 
         return interaction.followUp(replyOptions);
     }
@@ -117,6 +123,7 @@ export class InMemoryInteractionResponseRegistry implements InteractionResponseR
             this.responses.delete(interaction.id);
             this.cleanupTimers.delete(interaction.id);
         }, INTERACTION_RESPONSE_TTL_MS);
+        timer.unref();
 
         this.cleanupTimers.set(interaction.id, timer);
     }
