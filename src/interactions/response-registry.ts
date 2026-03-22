@@ -19,7 +19,7 @@ import { MessageFlags } from 'discord.js';
 
 const INTERACTION_RESPONSE_TTL_MS = 15 * 60 * 1000;
 
-class StoredInteractionResponse implements AccordInteractionResponse {
+class InteractionResponseHandle implements AccordInteractionResponse {
     constructor(private readonly interaction: Interaction) {}
 
     public async reply(options: string | AccordReplyOptions): Promise<void> {
@@ -106,7 +106,7 @@ export class InMemoryInteractionResponseRegistry implements InteractionResponseR
     private readonly cleanupTimers = new Map<string, NodeJS.Timeout>();
 
     public register(interaction: Interaction): void {
-        this.responses.set(interaction.id, new StoredInteractionResponse(interaction));
+        this.responses.set(interaction.id, new InteractionResponseHandle(interaction));
 
         const existingTimer = this.cleanupTimers.get(interaction.id);
         if (existingTimer) {

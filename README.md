@@ -80,6 +80,8 @@ AccordJS follows a clean, event-driven architecture with these core principles:
 AccordJS distinguishes between Discord.js `gateway events` such as `guildMemberRemove` and normalized `AccordJS events` such as `MEMBER_LEAVE`.
 The canonical mapping table lives in [docs/event-model.md](docs/event-model.md).
 The normalization policy lives in [docs/event-normalization-policy.md](docs/event-normalization-policy.md).
+The current interaction flow lives in [docs/interaction-flow.md](docs/interaction-flow.md).
+The current response API lives in [docs/interaction-response-api.md](docs/interaction-response-api.md).
 The next interaction roadmap lives in [docs/interaction-presentation-layer.md](docs/interaction-presentation-layer.md).
 
 ### 2. Discord Client Isolation

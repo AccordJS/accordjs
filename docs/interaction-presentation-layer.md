@@ -4,6 +4,11 @@ This document defines the next major AccordJS framework initiative after the cur
 
 The goal is to let bots build rich, Discord-native admin workflows without dropping to raw `discord.js` for every interaction and response.
 
+See also:
+
+- [docs/interaction-flow.md](interaction-flow.md)
+- [docs/interaction-response-api.md](interaction-response-api.md)
+
 ## Why This Exists
 
 Green Bird Bot showed that Discord itself can be the admin surface:
