@@ -1,0 +1,31 @@
+examples/green-bird-bot/docs/overview.md
+  54aeeddd6fc0f59b 282-284,286-305,310-311,316-340
+src/normalizers/normalize-presence.ts
+  54aeeddd6fc0f59b 1,28-31,39
+tests/unit/events/normalize-message.test.ts
+  54aeeddd6fc0f59b 195-211
+tests/unit/events/normalize-presence.test.ts
+  54aeeddd6fc0f59b 84,92
+src/normalizers/normalize-message.ts
+  54aeeddd6fc0f59b 78
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.17",
+  "base_commit_sha": "77b1dad5eb2a9eaa94cd7f17d6ca09e1acfc2e53",
+  "prompts": {
+    "54aeeddd6fc0f59b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d07ed-aa21-79a3-8fb3-a1168c9f14ce",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Angel S. Moreno <angelxmoreno@gmail.com>",
+      "messages": [],
+      "total_additions": 76,
+      "total_deletions": 29,
+      "accepted_lines": 76,
+      "overriden_lines": 0
+    }
+  }
+}
