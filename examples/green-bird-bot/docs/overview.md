@@ -331,8 +331,8 @@ SELECT
   COALESCE(j.joins_count, 0) AS joins_count,
   COALESCE(l.leaves_count, 0) AS leaves_count,
   COALESCE(j.joins_count, 0) - COALESCE(l.leaves_count, 0) AS net_member_growth,
-  p.average_online_count,
-  p.peak_online_count
+  COALESCE(p.average_online_count, 0) AS average_online_count,
+  COALESCE(p.peak_online_count, 0) AS peak_online_count
 FROM activity_dates d
 LEFT JOIN message_stats m ON m.guild_id = d.guild_id AND m.date = d.date
 LEFT JOIN join_stats j ON j.guild_id = d.guild_id AND j.date = d.date
