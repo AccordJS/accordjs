@@ -95,9 +95,6 @@ Track presence changes and online status history to power real-time dashboards a
 * messageCreate
 * messageUpdate
 * messageDelete
-* guildMemberAdd
-* guildMemberRemove
-* presenceUpdate
 
 ### Storage Strategy
 
@@ -282,30 +279,65 @@ INSERT INTO daily_stats (
   active_users,
   joins_count,
   leaves_count,
-  net_member_growth
+  net_member_growth,
+  average_online_count,
+  peak_online_count
 )
-SELECT
-  m.guild_id,
-  DATE(m.created_at) AS date,
-  COUNT(*) AS message_count,
-  COUNT(DISTINCT m.user_id) AS active_users,
-  COALESCE(j.joins_count, 0) AS joins_count,
-  COALESCE(l.leaves_count, 0) AS leaves_count,
-  COALESCE(j.joins_count, 0) - COALESCE(l.leaves_count, 0) AS net_member_growth
-FROM messages m
-LEFT JOIN (
+WITH activity_dates AS (
+  SELECT guild_id, DATE(created_at) AS date
+  FROM messages
+  UNION
+  SELECT guild_id, DATE(occurred_at) AS date
+  FROM member_events
+  UNION
+  SELECT guild_id, DATE(recorded_at) AS date
+  FROM presence_events
+),
+message_stats AS (
+  SELECT
+    guild_id,
+    DATE(created_at) AS date,
+    COUNT(*) AS message_count,
+    COUNT(DISTINCT user_id) AS active_users
+  FROM messages
+  GROUP BY guild_id, DATE(created_at)
+),
+join_stats AS (
   SELECT guild_id, DATE(occurred_at) AS date, COUNT(*) AS joins_count
   FROM member_events
   WHERE event_type = 'join'
   GROUP BY guild_id, DATE(occurred_at)
-) j ON j.guild_id = m.guild_id AND j.date = DATE(m.created_at)
-LEFT JOIN (
+),
+leave_stats AS (
   SELECT guild_id, DATE(occurred_at) AS date, COUNT(*) AS leaves_count
   FROM member_events
   WHERE event_type = 'leave'
   GROUP BY guild_id, DATE(occurred_at)
-) l ON l.guild_id = m.guild_id AND l.date = DATE(m.created_at)
-GROUP BY m.guild_id, DATE(m.created_at), j.joins_count, l.leaves_count;
+),
+presence_stats AS (
+  SELECT
+    guild_id,
+    DATE(recorded_at) AS date,
+    AVG(online_count) AS average_online_count,
+    MAX(online_count) AS peak_online_count
+  FROM presence_events
+  GROUP BY guild_id, DATE(recorded_at)
+)
+SELECT
+  d.guild_id,
+  d.date,
+  COALESCE(m.message_count, 0) AS message_count,
+  COALESCE(m.active_users, 0) AS active_users,
+  COALESCE(j.joins_count, 0) AS joins_count,
+  COALESCE(l.leaves_count, 0) AS leaves_count,
+  COALESCE(j.joins_count, 0) - COALESCE(l.leaves_count, 0) AS net_member_growth,
+  p.average_online_count,
+  p.peak_online_count
+FROM activity_dates d
+LEFT JOIN message_stats m ON m.guild_id = d.guild_id AND m.date = d.date
+LEFT JOIN join_stats j ON j.guild_id = d.guild_id AND j.date = d.date
+LEFT JOIN leave_stats l ON l.guild_id = d.guild_id AND l.date = d.date
+LEFT JOIN presence_stats p ON p.guild_id = d.guild_id AND p.date = d.date;
 ```
 
 ### Gotchas and Technical Advice

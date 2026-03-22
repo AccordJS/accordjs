@@ -75,7 +75,7 @@ export const normalizeMessageUpdate = (
         serverId: newMessage.guildId ?? undefined,
         userId: newMessage.author?.id,
         authorId: newMessage.author?.id,
-        content: newMessage.content,
+        content: newMessage.content ?? undefined,
         editedAt: newMessage.editedTimestamp ?? undefined,
     });
 };

@@ -192,6 +192,23 @@ describe('Message Normalization', () => {
         });
     });
 
+    it('should coerce null partial message content to undefined', () => {
+        const oldMessage = {
+            id: 'msg-update-457',
+            channelId: 'chan-999',
+        } as PartialMessage;
+
+        const newMessage = {
+            id: 'msg-update-457',
+            channelId: 'chan-999',
+            content: null,
+        } as PartialMessage;
+
+        const normalized = normalizeMessageUpdate(oldMessage, newMessage);
+
+        expect(normalized.content).toBeUndefined();
+    });
+
     it('should throw for updated messages missing required identifiers', () => {
         const oldMessage = {
             id: 'msg-update-789',

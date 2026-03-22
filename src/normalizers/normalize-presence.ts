@@ -1,11 +1,5 @@
-import { type PresenceUpdateEvent, PresenceUpdateEventSchema } from '@app/types';
+import { type ClientStatusSnapshot, type PresenceUpdateEvent, PresenceUpdateEventSchema } from '@app/types';
 import type { Activity, Presence } from 'discord.js';
-
-type ClientStatusSnapshot = {
-    desktop?: string;
-    mobile?: string;
-    web?: string;
-};
 
 const normalizeClientStatus = (presence: Presence | null): ClientStatusSnapshot | undefined => {
     const clientStatus = presence?.clientStatus;
@@ -31,6 +25,10 @@ const normalizeActivityTypes = (activities: readonly Activity[] | undefined): nu
 };
 
 export const normalizePresenceUpdate = (oldPresence: Presence | null, newPresence: Presence): PresenceUpdateEvent => {
+    if (!newPresence.guild?.id) {
+        throw new Error('Presence update is missing guild context');
+    }
+
     const occurredAt = Date.now();
 
     return PresenceUpdateEventSchema.parse({
@@ -38,7 +36,7 @@ export const normalizePresenceUpdate = (oldPresence: Presence | null, newPresenc
         timestamp: occurredAt,
         occurredAt,
         userId: newPresence.userId,
-        serverId: newPresence.guild?.id,
+        serverId: newPresence.guild.id,
         oldStatus: oldPresence?.status,
         newStatus: newPresence.status,
         oldClientStatus: normalizeClientStatus(oldPresence),

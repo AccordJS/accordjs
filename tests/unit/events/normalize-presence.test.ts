@@ -81,7 +81,7 @@ describe('Presence Normalization', () => {
         });
     });
 
-    it('should throw when new presence lacks required guild context', () => {
+    it('should throw a clear error when new presence lacks required guild context', () => {
         const newPresence = {
             userId: 'user-3',
             status: 'online',
@@ -89,6 +89,6 @@ describe('Presence Normalization', () => {
             activities: [],
         } as unknown as Presence;
 
-        expect(() => normalizePresenceUpdate(null, newPresence)).toThrow();
+        expect(() => normalizePresenceUpdate(null, newPresence)).toThrow('Presence update is missing guild context');
     });
 });
