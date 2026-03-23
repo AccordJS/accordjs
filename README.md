@@ -83,6 +83,7 @@ The normalization policy lives in [docs/event-normalization-policy.md](docs/even
 The current interaction flow lives in [docs/interaction-flow.md](docs/interaction-flow.md).
 The current response API lives in [docs/interaction-response-api.md](docs/interaction-response-api.md).
 The next interaction roadmap lives in [docs/interaction-presentation-layer.md](docs/interaction-presentation-layer.md).
+The implementation sequence lives in [docs/roadmap.md](docs/roadmap.md).
 
 ### 2. Discord Client Isolation
 The Discord client exists only in the gateway layer, preventing Discord-specific objects from leaking into application logic.
