@@ -34,7 +34,7 @@
         "check": "bun run check-types && bun run lint && bun run check-dups"
     },
     "dependencies": {
-        "discord.js": "14.25.1",
+        "discord.js": "14.26.2",
         "dotenv": "^17.2.3",
         "dotenv-expand": "^12.0.3",
         "pino": "^10.3.1",
